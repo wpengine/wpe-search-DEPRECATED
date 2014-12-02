@@ -21,11 +21,10 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 */
 	private $failed_posts = array();
 
-
         /**
-         * Set the EP_HOST constant
+         * Set the ElasticSearch host
          *
-         * @synopsis <ElasticSearch-host-and-optional-port>
+         * @synopsis <ElasticSearch-host>
          * @subcommand set-host
          *
          * @param array $args
@@ -34,15 +33,23 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
         public function set_host( $args, $assoc_args ) {
           $host = $args[0];
           if( isset( $host ) ) {
-            if( ! preg_match( '/^https?:\/\//', $host ) ) {
-              $host = 'http://' . $host;
-            }
+            ep_set_server_host( $host );
+          }
+        }
 
-	    if( ! preg_match( '/:\d+$/', $host ) ) {
-	      $host = $host . ':9200';
-	    }
-
-            define( 'EP_HOST', $host );
+        /**
+         * Set the ElasticSearch port
+         *
+         * @synopsis <ElasticSearch-portt>
+         * @subcommand set-portt
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_host( $args, $assoc_args ) {
+          $port = $args[0];
+          if( isset( $port ) ) {
+            ep_set_server_port( $port );
           }
         }
 
@@ -476,7 +483,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	public function status() {
 		$this->_connect_check();
 
-		$request = wp_remote_get( trailingslashit( EP_HOST ) . '_status/?pretty' );
+		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_status/?pretty' );
 
 		if ( is_wp_error( $request ) ) {
 			WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
@@ -497,7 +504,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	public function stats() {
 		$this->_connect_check();
 
-		$request = wp_remote_get( trailingslashit( EP_HOST ) . '_stats/' );
+		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
 		if ( is_wp_error( $request ) ) {
 			WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
 		}
@@ -589,8 +596,9 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 * @since 0.9.3
 	 */
 	private function _connect_check() {
-		if ( ! defined( 'EP_HOST' ) ) {
-			WP_CLI::error( __( 'EP_HOST is not defined! Check wp-config.php', 'elasticpress' ) );
+		$ep_server_url = ep_get_server_url();
+		if ( ! isset( $ep_server_url ) ) {
+			WP_CLI::error( __( 'The ElasticSearch server URL is not defined! You should be calling "set-host", at least.', 'elasticpress' ) );
 		}
 
 		if ( false === ep_elasticsearch_alive() ) {
