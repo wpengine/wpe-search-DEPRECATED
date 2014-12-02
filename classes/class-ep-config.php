@@ -40,8 +40,11 @@ class EP_Config {
           if( isset( $this->server_host ) ) {
             return 'http://' . $this->server_host . ':' . $this->server_port;
           }
-          else {
+          else if ( defined( 'EP_HOST' ) && EP_HOST ) {
             return EP_HOST;
+          }
+          else {
+            return null;
           }
 
         }
