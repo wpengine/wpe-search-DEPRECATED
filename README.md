@@ -1,7 +1,7 @@
-ElasticPress
-=============
+ElasticPress For WPEngine
+=========================
 
-Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/).
+Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/) running hosted on [WPEngine](http://wpengine.com/).
 
 ## Background
 
@@ -37,44 +37,43 @@ There are other Elasticsearch integration plugins available for WordPress. Elast
 
 First, make sure you have Elasticsearch and WP-CLI configured properly.
 
-1. Using wp-cli, set the ```EP_HOST``` constant to the host and port of your ElasticSearch server. For example:
+You should be able to view the Elasticsearch server status in your browser before continuing.  Assuming the values below, the URL would be [http://192.168.50.4:9200/_status?pretty=true](http://192.168.50.4:9200/_status?pretty=true).
+
+1. Activate the plugin with wp-cli.  Remember to use the ```--network``` flag for multi-site installs.
 
 ```php
-wp elasticpress set-host 192.168.50.4:9200
+wp plugin activate ElasticPressForWPEngine [--network]
 ```
 
-If the port and preceding colon are not present, the default port 9200 is used.
+2. Using wp-cli, configure the host of your Elasticsearch server. For example:
+
+```php
+wp ep4wpe set-host 192.168.50.4
+```
+
+3. _(Optional)_ Using wp-cli, configure the port of your Elasticsearch server. For example:
+
+```php
+wp ep4wpe set-port 9200
+```
+
+Port 9200 is used by default if not manually configured.
+
+## Index Initialization
 
 
-The proceeding sets depend on whether you are configuring for single site or multi-site with cross-site search capabilities.
-
-### Single Site
-
-2. Activate the plugin.
-3. Using wp-cli, do an initial sync (with mapping) with your ES server by running the following commands:
+1. Using wp-cli, do an initial sync (with mapping) with your ES server by running the following commands.  Remember to use the ```--network-wide``` flag for multi-site installs.
 
 ```bash
-wp elasticpress index --setup
+wp elasticpress index --setup [--network-wide]
 ```
 
-### Multisite Cross-site Search
+Index names are automatically generated based on site URL.  Once your index or indices are initialized, ```WP_Query``` will be integrated with Elasticsearch and support a few special parameters.
 
-2. Network activate the plugin
-3. Using wp-cli, do an initial sync (with mapping) with your ES server by running the following commands:
-
-```bash
-wp elasticpress index --setup --network-wide
-```
-
-After your index finishes, ```WP_Query``` will be integrated with Elasticsearch and support a few special parameters.
-
-### Creating Elasticsearch Indices
-
-Creating indices is handled automatically by ElasticPress. Index names are automatically generated based on site URL.
 
 ## Usage
 
-After running an index, ElasticPress integrates with WP_Query. The end goal is to support all the parameters available to WP_Query so the transition is completely transparent. Right now, our WP_Query integration supports *many* of the relevant WP_Query parameters and adds a couple special ones.
+After running an index, ElasticPress integrates with ```WP_Query```. The end goal is to support all the parameters available to ```WP_Query``` so the transition is completely transparent. Right now, our ```WP_Query``` integration supports *many* of the relevant WP_Query parameters and adds a couple of special ones.
 
 ### Supported WP_Query Parameters
 
