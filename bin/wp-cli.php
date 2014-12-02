@@ -33,7 +33,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
         public function set_host( $args, $assoc_args ) {
           $host = $args[0];
           if( isset( $host ) ) {
-            WP_CLI::log( sprintf( __( 'Setting Elasticsearch host to %d', 'elasticpress' ), $host ) );
+            WP_CLI::log( sprintf( __( 'Setting Elasticsearch host to %s', 'elasticpress' ), $host ) );
             ep_set_server_host( $host );
           }
           else {
