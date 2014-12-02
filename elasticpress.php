@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Plugin Name: ElasticPress
- * Description: Integrate WordPress search with Elasticsearch
+ * Plugin Name: ElasticPress For WP Engine
+ * Description: Integrate WPEngine WordPress search with Elasticsearch
  * Version:     1.1
- * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up
- * Author URI:  http://10up.com
+ * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up, Chris Goldman
+ * Author URI:  http://10up.com, http://dhapdigital.com
  * License:     MIT
  *
  * This program derives work from Alley Interactive's SearchPress
@@ -13,6 +13,7 @@
  *
  * Copyright (C) 2012-2013 Automattic
  * Copyright (C) 2013 SearchPress
+ * Copyright (c) 2014 WPEngine
  */
 
 require_once( 'classes/class-ep-config.php' );
