@@ -1,6 +1,6 @@
 <?php
 
-WP_CLI::add_command( 'elasticpress', 'ElasticPress_CLI_Command' );
+WP_CLI::add_command( 'ep4wpe', 'ElasticPress_CLI_Command' );
 
 /**
  * CLI Commands for ElasticPress
@@ -22,9 +22,9 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	private $failed_posts = array();
 
         /**
-         * Set the ElasticSearch host
+         * Set the Elasticsearch host
          *
-         * @synopsis <ElasticSearch-host>
+         * @synopsis <Elasticsearch-host>
          * @subcommand set-host
          *
          * @param array $args
@@ -33,23 +33,31 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
         public function set_host( $args, $assoc_args ) {
           $host = $args[0];
           if( isset( $host ) ) {
+            WP_CLI::log( sprintf( __( 'Setting Elasticsearch host to %d', 'elasticpress' ), $host ) );
             ep_set_server_host( $host );
+          }
+          else {
+            WP_CLI::error( __( 'No host specified', 'elasticpress' ) );
           }
         }
 
         /**
-         * Set the ElasticSearch port
+         * Set the Elasticsearch port
          *
-         * @synopsis <ElasticSearch-portt>
+         * @synopsis <Elasticsearch-port>
          * @subcommand set-portt
          *
          * @param array $args
          * @param array $assoc_args
          */
-        public function set_host( $args, $assoc_args ) {
+        public function set_port( $args, $assoc_args ) {
           $port = $args[0];
           if( isset( $port ) ) {
+            WP_CLI::log( sprintf( __( 'Setting Elasticsearch port to %d', 'elasticpress' ), $port ) );
             ep_set_server_port( $port );
+          }
+          else {
+            WP_CLI::error( __( 'No port specified', 'elasticpress' ) );
           }
         }
 
@@ -598,7 +606,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	private function _connect_check() {
 		$ep_server_url = ep_get_server_url();
 		if ( ! isset( $ep_server_url ) ) {
-			WP_CLI::error( __( 'The ElasticSearch server URL is not defined! You should be calling "set-host", at least.', 'elasticpress' ) );
+			WP_CLI::error( __( 'The Elasticsearch server URL is not defined! You should be calling "set-host", at least.', 'elasticpress' ) );
 		}
 
 		if ( false === ep_elasticsearch_alive() ) {
