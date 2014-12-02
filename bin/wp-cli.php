@@ -45,7 +45,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
          * Set the Elasticsearch port
          *
          * @synopsis <Elasticsearch-port>
-         * @subcommand set-portt
+         * @subcommand set-port
          *
          * @param array $args
          * @param array $assoc_args
