@@ -3,6 +3,20 @@
 class EP_Config {
 
 	/**
+	 * Holds the host name or address of the ElasticSearch server
+	 *
+	 * @since 1.1.1
+	 */
+	 private $server_host = null;
+
+	/**
+	 * Holds the port number of the ElasticSearch server.  Defaults to 9200.
+	 *
+	 * @since 1.1.1
+	 */
+	 private $server_port = '9200';
+
+	/**
 	 * Get a singleton instance of the class
 	 *
 	 * @since 0.1.0
@@ -17,6 +31,46 @@ class EP_Config {
 
 		return $instance;
 	}
+
+        public function get_server_url() {
+          if( ! isset( $this->server_port ) ) {
+            $this->server_port = '9200';
+          }
+
+          if( isset( $this->server_host ) ) {
+            return 'http://' . $this->server_host . ':' . $this->server_port;
+          }
+          else {
+            return EP_HOST;
+          }
+
+        }
+
+	/**
+	 * Sets the host name or address of the ElasticSearch server.
+	 *
+	 * @param string $host (optional) Port number.  If null, do nothing.
+	 * @since 1.1.1
+	 * @return nil
+	 */
+        public function set_server_host( $host = null ) {
+          if( isset( $host ) ) {
+            $this->server_host = $host;
+          }
+        }
+
+	/**
+	 * Sets the port number of the ElasticSearch server.
+	 *
+	 * @param string $port (optional) Port number.  If null, do nothing.
+	 * @since 1.1.1
+	 * @return nil
+	 */
+        public function set_server_port( $port = null ) {
+          if( isset( $port ) && preg_match( '^\d+$', $port ) ) {
+            $this->server_port = $port;
+          }
+        }
 
 	/**
 	 * Generates the index name for the current site
@@ -56,7 +110,7 @@ class EP_Config {
 			$index = implode( ',', array_filter( $index ) );
 		}
 
-		return untrailingslashit( EP_HOST ) . '/' . $index;
+		return untrailingslashit( $this->get_server_url() ) . '/' . $index;
 	}
 
 	/**
@@ -109,3 +163,16 @@ function ep_get_indexable_post_types() {
 function ep_get_network_alias() {
 	return EP_Config::factory()->get_network_alias();
 }
+
+function ep_set_server_host( $host = null ) {
+  return EP_Config::factory()->set_server_host( $host );
+}
+
+function ep_set_server_port( $port = null ) {
+  return EP_Config::factory()->set_server_port( $port );
+}
+
+function ep_get_server_url() {
+  return EP_Config::factory()->get_server_url();
+}
+
