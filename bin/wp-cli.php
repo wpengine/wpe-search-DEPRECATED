@@ -25,19 +25,22 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
         /**
          * Set the EP_HOST constant
          *
-         * @synopsis <ElasticSearch-host-url>
-         * @subcommand set-elasticsearch-host
-         * @alias es-host
+         * @synopsis <ElasticSearch-host-and-optional-port>
+         * @subcommand set-host
          *
          * @param array $args
          * @param array $assoc_args
          */
-        public function set_elasticsearch_host( $args, $assoc_args ) {
+        public function set_host( $args, $assoc_args ) {
           $host = $args[0];
           if( isset( $host ) ) {
             if( ! preg_match( '/^https?:\/\//', $host ) ) {
               $host = 'http://' . $host;
             }
+
+	    if( ! preg_match( '/:\d+$/', $host ) ) {
+	      $host = $host . ':9200';
+	    }
 
             define( 'EP_HOST', $host );
           }

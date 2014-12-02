@@ -37,11 +37,14 @@ There are other Elasticsearch integration plugins available for WordPress. Elast
 
 First, make sure you have Elasticsearch and WP-CLI configured properly.
 
-1. Define the constant ```EP_HOST``` in your ```wp-config.php``` file with the connection (and port) of your Elasticsearch application. For example:
+1. Using wp-cli, set the ```EP_HOST``` constant to the host and port of your ElasticSearch server. For example:
 
 ```php
-define( 'EP_HOST', 'http://192.168.50.4:9200' );
+wp elasticpress set-host 192.168.50.4:9200
 ```
+
+If the port and preceding colon are not present, the default port 9200 is used.
+
 
 The proceeding sets depend on whether you are configuring for single site or multi-site with cross-site search capabilities.
 
