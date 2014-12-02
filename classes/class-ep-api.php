@@ -227,7 +227,7 @@ class EP_API {
 	 * @return bool|array
 	 */
 	public function delete_network_alias() {
-		$url = untrailingslashit( EP_HOST ) . '/*/_alias/' . ep_get_network_alias();
+		$url = untrailingslashit( ep_get_server_url() ) . '/*/_alias/' . ep_get_network_alias();
 
 		$request = wp_remote_request( $url, array( 'method' => 'DELETE' ) );
 
@@ -248,7 +248,7 @@ class EP_API {
 	 * @return array|bool
 	 */
 	public function create_network_alias( $indexes ) {
-		$url = untrailingslashit( EP_HOST ) . '/_aliases';
+		$url = untrailingslashit( ep_get_server_url() ) . '/_aliases';
 
 		$args = array(
 			'actions' => array()
@@ -924,7 +924,7 @@ class EP_API {
 	 */
 	public function bulk_index_posts( $body ) {
 		// create the url with index name and type so that we don't have to repeat it over and over in the request (thereby reducing the request size)
-		$url     = trailingslashit( EP_HOST ) . trailingslashit( ep_get_index_name() ) . 'post/_bulk';
+		$url     = trailingslashit( ep_get_server_url() ) . trailingslashit( ep_get_index_name() ) . 'post/_bulk';
 		$request = wp_remote_request( $url, array( 'method' => 'POST', 'body' => $body ) );
 
 		return is_wp_error( $request ) ? $request : json_decode( wp_remote_retrieve_body( $request ), true );
@@ -1058,7 +1058,7 @@ class EP_API {
 	public function elasticsearch_alive() {
 		$elasticsearch_alive = false;
 
-		$url = EP_HOST;
+		$url = ep_get_server_url();
 
 		$request = wp_remote_request( $url );
 
