@@ -21,6 +21,28 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 */
 	private $failed_posts = array();
 
+
+        /**
+         * Set the EP_HOST constant
+         *
+         * @synopsis <ElasticSearch-host-url>
+         * @subcommand set-elasticsearch-host
+         * @alias es-host
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_elasticsearch_host( $args, $assoc_args ) {
+          $host = $args[0];
+          if( isset( $host ) ) {
+            if( ! preg_match( '/^https?:\/\//', $host ) ) {
+              $host = 'http://' . $host;
+            }
+
+            define( 'EP_HOST', $host );
+          }
+        }
+
 	/**
 	 * Add the document mapping
 	 *
