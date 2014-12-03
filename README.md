@@ -65,7 +65,7 @@ Port 9200 is used by default if not manually configured.
 1. Using wp-cli, do an initial sync (with mapping) with your ES server by running the following commands.  Remember to use the ```--network-wide``` flag for multi-site installs.
 
 ```bash
-wp elasticpress index --setup [--network-wide]
+wp ep4wpe index --setup [--network-wide]
 ```
 
 Index names are automatically generated based on site URL.  Once your index or indices are initialized, ```WP_Query``` will be integrated with Elasticsearch and support a few special parameters.
