@@ -1,20 +1,10 @@
 <?php
+namespace ep4wpe;
+
+define( __NAMESPACE__ . '\host', __NAMESPACE__ . '_host' );
+define( __NAMESPACE__ . '\port', __NAMESPACE__ . '_port' );
 
 class EP_Config {
-
-	/**
-	 * Holds the host name or address of the ElasticSearch server
-	 *
-	 * @since 1.1.1
-	 */
-	 private $server_host = null;
-
-	/**
-	 * Holds the port number of the ElasticSearch server.  Defaults to 9200.
-	 *
-	 * @since 1.1.1
-	 */
-	 private $server_port = '9200';
 
 	/**
 	 * Get a singleton instance of the class
@@ -33,20 +23,27 @@ class EP_Config {
 	}
 
         public function get_server_url() {
-          if( ! isset( $this->server_port ) ) {
-            $this->server_port = '9200';
+          $host = $this->get_server_host();
+          if( isset( $host ) ) {
+            $port = $this->get_server_port();
+            return sprintf( 'http://%s:%d', $host, $port  );
           }
-
-          if( isset( $this->server_host ) ) {
-            return 'http://' . $this->server_host . ':' . $this->server_port;
-          }
-          else if ( defined( 'EP_HOST' ) && EP_HOST ) {
-            return EP_HOST;
+          else if( defined( 'EP_HOST' ) && EP_HOST ) {
+              return EP_HOST;
           }
           else {
             return null;
           }
+        }
 
+	/**
+	 * Gets the host name or address of the ElasticSearch server.
+	 *
+	 * @since 1.1.1
+	 * @return string Host name or IP address
+	 */
+        public function get_server_host() {
+          return get_site_option( constant( __NAMESPACE__ . '\host' ), null );
         }
 
 	/**
@@ -58,8 +55,18 @@ class EP_Config {
 	 */
         public function set_server_host( $host = null ) {
           if( isset( $host ) ) {
-            $this->server_host = $host;
+            update_site_option( constant( __NAMESPACE__ . '\host' ), $host );
           }
+        }
+
+	/**
+	 * Gets the port number of the ElasticSearch server.
+	 *
+	 * @since 1.1.1
+	 * @return integer A port number (1-65535)
+	 */
+        public function get_server_port() {
+          return get_site_option( constant( __NAMESPACE__ . '\port' ), 9200 );
         }
 
 	/**
@@ -70,8 +77,8 @@ class EP_Config {
 	 * @return nil
 	 */
         public function set_server_port( $port = null ) {
-          if( isset( $port ) && preg_match( '^\d+$', $port ) ) {
-            $this->server_port = $port;
+          if( isset( $port ) && preg_match( '^\d{1,5}$', $port ) && $port < 65536 ) {
+            update_site_option( constant( __NAMESPACE__ . '\port' ), $port );
           }
         }
 
@@ -167,8 +174,16 @@ function ep_get_network_alias() {
 	return EP_Config::factory()->get_network_alias();
 }
 
+function ep_get_server_host() {
+  return EP_Config::factory()->get_server_host();
+}
+
 function ep_set_server_host( $host = null ) {
   return EP_Config::factory()->set_server_host( $host );
+}
+
+function ep_get_server_port() {
+  return EP_Config::factory()->get_server_port();
 }
 
 function ep_set_server_port( $port = null ) {

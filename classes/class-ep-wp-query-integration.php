@@ -1,4 +1,5 @@
 <?php
+namespace ep4wpe;
 
 class EP_WP_Query_Integration {
 

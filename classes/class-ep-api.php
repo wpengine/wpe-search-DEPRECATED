@@ -1,4 +1,7 @@
 <?php
+namespace ep4wpe;
+
+define( __NAMESPACE__ . '\is_active_option', __NAMESPACE__ . '_is_active' );
 
 class EP_API {
 
@@ -912,7 +915,7 @@ class EP_API {
 	 * @return mixed|void
 	 */
 	public function get_sites() {
-		return apply_filters( 'ep_indexable_sites', wp_get_sites() );
+          return is_multisite() ? apply_filters( 'ep_indexable_sites', wp_get_sites() ) : array();
 	}
 
 	/**
@@ -956,7 +959,7 @@ class EP_API {
 	 * @since 1.0.0
 	 */
 	public function deactivate() {
-		return delete_site_option( 'ep_is_active' );
+          return delete_site_option( constant( __NAMESPACE__ . '\is_active_option' ) );
 	}
 
 	/**
@@ -966,7 +969,7 @@ class EP_API {
 	 * @since 1.0.0
 	 */
 	public function activate() {
-		return update_site_option( 'ep_is_active', true );
+          return update_site_option( constant( __NAMESPACE__ . '\is_active_option' ), true );
 	}
 
 	/**
@@ -1045,7 +1048,8 @@ class EP_API {
 	 * @since 0.9.2
 	 */
 	public function is_activated() {
-		return get_site_option( 'ep_is_active', false, false );
+          //          echo constant( __NAMESPACE__ . '\is_active_option' ) . "\n";
+          return get_site_option( constant( __NAMESPACE__ . '\is_active_option' ), false, false );
 	}
 
 	/**
