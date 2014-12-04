@@ -1100,6 +1100,24 @@ class EP_API {
 
 		return $index_exists;
 	}
+
+	/**
+	 * Get stats on the current index.
+	 *
+         * @return array
+	 * @since 0.9.2
+	 */
+	public function stats() {
+		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
+		if ( is_wp_error( $request ) ) {
+			\WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+		}
+		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
+		$current_index = ep_get_index_name();
+
+		return isset( $body['indices'][$current_index] ) ? $body['indices'][$current_index] : null;
+	}
+
 }
 
 EP_API::factory();
@@ -1182,4 +1200,8 @@ function ep_elasticsearch_alive() {
 
 function ep_index_exists() {
 	return EP_API::factory()->index_exists();
+}
+
+function ep_stats() {
+  return EP_API::factory()->stats();
 }

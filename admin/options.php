@@ -7,26 +7,29 @@ function ep4wpe_settings_page() {
   <div class="wrap">
     <h2>ElasticPress For WPEngine Settings</h2>
 
-    [<?php get_site_option( "ep4wpe\\is_active_option" ); ?>]
+    <p>ElasticPress is <?php echo ep4wpe\ep_is_activated() ? 'ACTIVE' : 'INACTIVE'; ?>.<p>
 
-    <form method="post" action="options.php">
     <?php settings_fields( 'ep4wpe_elasticsearch_server' ); ?>
     <?php do_settings_sections( 'ep4wpe_settings_page' ); ?>
-    </form>
 
   </div>
 <?php
 }
 
 function ep4wpe_elasticsearch_server_section() {
-  echo "<em>All values are read-only.</em>";
+  $stats_map = ep4wpe\ep_stats();
+  if( isset( $stats_map ) ) {
+?>
+    <?php printf( "<div>Search index contains %s documents, utilizing %s of disk space", $stats_map['total']['docs']['count'], size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) ); ?> 
+
+<?php
+                                                                                         }
 }
 
 function ep4wpe_print_field_callback( $args ) {
   $field_id = $args{'id'};
   $default = isset( $args{'default'} ) ? $args{'default'} : '';
-  $value = get_option( $field_id, $default );
-  printf( '<input type="text" id="%s" name="ep4wpe_settings[%s]" value="%s" disabled="disabled" >', $field_id, $field_id, $value );
+  echo get_site_option( $field_id, $default );
 }
 
 /* Admin action callbacks */
@@ -58,7 +61,7 @@ function ep4wpe_settings_init() {
                      'ep4wpe_print_field_callback',
                      'ep4wpe_settings_page',
                      'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_elasticsearch_server_host' )
+                     array( 'id' => 'ep4wpe_host' )
                      );
 
   add_settings_field(
@@ -67,7 +70,7 @@ function ep4wpe_settings_init() {
                      'ep4wpe_print_field_callback',
                      'ep4wpe_settings_page',
                      'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_elasticsearch_server_port', 'default' => '9200' )
+                     array( 'id' => 'ep4wpe_port', 'default' => '9200' )
                      );
 
 

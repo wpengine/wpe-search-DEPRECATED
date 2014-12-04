@@ -549,17 +549,14 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	public function stats() {
 		$this->_connect_check();
 
-		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
-		if ( is_wp_error( $request ) ) {
-			\WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
-		}
-		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
-		$current_index = ep_get_index_name();
+                $stats_map = ep_stats();
+                $current_index = ep_get_index_name();
 
-		if ( isset( $body['indices'][$current_index] ) ) {
+
+		if ( isset( $stats_map ) ) {
 			\WP_CLI::log( '====== Stats for: ' . $current_index . " ======" );
-			\WP_CLI::log( 'Documents:  ' . $body['indices'][$current_index]['total']['docs']['count'] );
-			\WP_CLI::log( 'Index Size: ' . size_format( $body['indices'][$current_index]['total']['store']['size_in_bytes'], 2 ) );
+			\WP_CLI::log( 'Documents:  ' . $stats_map['total']['docs']['count'] );
+			\WP_CLI::log( 'Index Size: ' . size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
 			\WP_CLI::log( '====== End Stats ======' );
 		} else {
 			\WP_CLI::warning( $current_index . ' is not currently indexed.' );
