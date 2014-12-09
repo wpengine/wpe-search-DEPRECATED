@@ -90,19 +90,7 @@ class EP_API {
 	 * @return array
 	 */
 	public function search( $args, $scope = 'current' ) {
-		$index = null;
-
-		if ( 'all' === $scope ) {
-			$index = ep_get_network_alias();
-		} elseif ( is_int( $scope ) ) {
-			$index = ep_get_index_name( $scope );
-		} elseif ( is_array( $scope ) ) {
-			$index = array();
-
-			foreach ( $scope as $site_id ) {
-				$index[] = ep_get_index_name( $site_id );
-			}
-		}
+		$index = $this->_get_index( $scope );
 
 		$index_url = ep_get_index_url( $index );
 
@@ -1110,13 +1098,90 @@ class EP_API {
 	public function stats() {
 		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
 		if ( is_wp_error( $request ) ) {
-			\WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+                  return null;
 		}
 		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
 		$current_index = ep_get_index_name();
 
 		return isset( $body['indices'][$current_index] ) ? $body['indices'][$current_index] : null;
 	}
+
+        /**
+         * Determine the index variable to be passed to ep_get_index_url.
+         *
+	 * @param string $scope
+         * @since 1.1.1
+         * @return mixed
+         */
+        private function _get_index( $scope = 'current' ) {
+		$index = null;
+
+		if ( 'all' === $scope ) {
+			$index = ep_get_network_alias();
+		} elseif ( is_int( $scope ) ) {
+			$index = ep_get_index_name( $scope );
+		} elseif ( is_array( $scope ) ) {
+			$index = array();
+
+			foreach ( $scope as $site_id ) {
+				$index[] = ep_get_index_name( $site_id );
+			}
+		}
+                return $index;
+        }
+
+
+	/**
+	 * Search for posts under a specific site index or the global index ($site_id = 0).
+	 *
+	 * @param intval $post_id
+	 * @since 1.1.1
+	 * @return array
+	 */
+	public function more_like_this( $post_id, $scope = 'current' ) {
+		$index = $this->_get_index( $scope );
+
+		$index_url = ep_get_index_url( $index );
+
+		$url = $index_url . '/post/$post_id/_mlt';
+
+		$request = wp_remote_request( $url, array( 'method' => 'GET' ) );
+
+		if ( ! is_wp_error( $request ) ) {
+
+			// Allow for direct response retrieval
+			do_action( 'ep_retrieve_raw_response', $request, array(), $scope );
+
+			$response_body = wp_remote_retrieve_body( $request );
+
+			$response = json_decode( $response_body, true );
+
+			if ( $this->is_empty_search( $response ) ) {
+				return array( 'found_posts' => 0, 'posts' => array() );
+			}
+
+			$hits = $response['hits']['hits'];
+
+			// Check for and store aggregations
+			if ( ! empty( $response['aggregations'] ) ) {
+				do_action( 'ep_retrieve_aggregations', $response['aggregations'], $args, $scope );
+			}
+
+			$posts = array();
+
+			foreach ( $hits as $hit ) {
+				$post = $hit['_source'];
+				$post['site_id'] = $this->parse_site_id( $hit['_index'] );
+				$posts[] = $post;
+			}
+
+			return array( 'found_posts' => $response['hits']['total'], 'posts' => $posts );
+		}
+
+		return array( 'found_posts' => 0, 'posts' => array() );
+	}
+
+
 
 }
 
@@ -1205,3 +1270,8 @@ function ep_index_exists() {
 function ep_stats() {
   return EP_API::factory()->stats();
 }
+
+function ep_more_like_this( $post_id, $scope ) {
+  return EP_API::factory()->more_like_this( $post_id, $scope );
+}
+
