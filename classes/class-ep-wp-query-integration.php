@@ -138,7 +138,7 @@ class EP_WP_Query_Integration {
 		$posts = array();
 
 		foreach ( $search['posts'] as $post_array ) {
-			$post = new stdClass();
+			$post = new \stdClass();
 
 			$post->ID = $post_array['post_id'];
 			$post->site_id = get_current_blog_id();
