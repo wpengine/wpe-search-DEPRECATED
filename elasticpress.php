@@ -23,6 +23,7 @@ require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-api.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-sync-manager.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-elasticpress.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-wp-query-integration.php' );
+require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-widget.php' );
 
 require_once( EP4WPE__PLUGIN_DIR . 'admin/options.php' );
 
@@ -32,3 +33,4 @@ require_once( EP4WPE__PLUGIN_DIR . 'admin/options.php' );
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
   require_once( EP4WPE__PLUGIN_DIR . 'bin/wp-cli.php' );
 }
+
