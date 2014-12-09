@@ -23,6 +23,9 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
    * @param array $instance
    */
   public function widget( $args, $instance ) {
+    if( ! is_single() ) {
+      return;
+    }
     $post_id = $GLOBALS['post']->ID;
     $related_posts = ep_more_like_this( $post_id, null );
 
