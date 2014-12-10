@@ -32,7 +32,7 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 _Note:_ Requires [WP-CLI](http://wp-cli.org/) and [Elasticsearch](http://www.elasticsearch.org/).
 
-Please refer to [Github](https://github.com/10up/ElasticPress) for detailed usage instructions and documentation.
+Please refer to [Github](https://github.com/dhapdigitalinc/ElasticPressForWPEngine) for detailed usage instructions and documentation.
 
 == Installation ==
 1. First, you will need to properly [install and configure](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_installing_elasticsearch.html) Elasticsearch.
