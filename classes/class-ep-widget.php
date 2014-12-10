@@ -26,20 +26,28 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
     if( ! is_single() ) {
       return;
     }
-    $post_id = $GLOBALS['post']->ID;
+    global $post;
+    $post_id = $post->ID;
     $related_posts = ep_more_like_this( $post_id, null );
 
     echo $args['before_widget'];
     echo $args['before_title'] . __( 'Related posts', 'elasticpress' ) . $args['after_title'];
 ?>
-<section id="ep4wpe-related-posts-section" clas="clearfix">
 <?php
    if( $related_posts['found_posts'] > 0 ) {
      echo '<ul class="ep4wpe-related-posts">';
+     $count = 0;
      foreach( $related_posts['posts'] as $post ) {
 ?>
-<li><h4 class="entry-title"><a href="<?php echo $post['permalink']; ?>" rel="bookmark" title="<?php echo $post['post_title']; ?>"><img src="<?php echo includes_url(); ?>images/crystal/document.png" width="14px"><?php echo $post['post_title'] ?></a></h4></li>
+<li>
+  <a href="<?php echo $post['permalink']; ?>" rel="bookmark" title="<?php echo $post['post_title']; ?>"><?php echo $post['post_title'] ?></a>
+  <span class="post-date"><?php echo mysql2date('F j, Y', $post['post_date']);; ?></span>
+</li>
 <?php
+       $count++;
+       if( $count >= $instance['ep4wpe_count'] ) {
+         break;
+       }
      }
      echo '</ul>';
    }
@@ -48,7 +56,6 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
    }
 ?>
 </ul>
-</section>
 <?php
 
 
