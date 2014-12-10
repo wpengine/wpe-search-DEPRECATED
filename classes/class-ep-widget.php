@@ -2,6 +2,7 @@
 namespace ep4wpe;
 
 define( __NAMESPACE__ . '\MAX_RELATED_POSTS', 10 );
+define( __NAMESPACE__ . '\POST_COUNT_FIELD', __NAMESPACE__ . '_count' );
 
 class ElasticPress_Related_Posts_Widget extends \WP_Widget {
 
@@ -45,7 +46,7 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
 </li>
 <?php
        $count++;
-       if( $count >= $instance['ep4wpe_count'] ) {
+       if( $count >= $instance[namespace\POST_COUNT_FIELD] ) {
          break;
        }
      }
@@ -68,11 +69,11 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
    * @param array $instance The widget options
    */
   public function form( $instance ) {
-    $post_count = ! empty( $instance['ep4wpe_count'] ) ? $instance['ep4wpe_count'] : __( '5', 'elasticpress' );
+    $post_count = ! empty( $instance[namespace\POST_COUNT_FIELD] ) ? $instance[namespace\POST_COUNT_FIELD] : 5;
 ?>
   <p>
-     <label for="<?php echo $this->get_field_id( 'ep4wpe_count' ); ?>"><?php printf( __( 'Post count (max %d):', 'elasticpress' ), namespace\MAX_RELATED_POSTS ); ?></label> 
-     <input class="widefat" id="<?php echo $this->get_field_id( 'ep4wpe_count' ); ?>" name="<?php echo $this->get_field_name( 'ep4wpe_count' ); ?>" type="text" value="<?php echo esc_attr( $post_count ); ?>">
+     <label for="<?php echo $this->get_field_id( namespace\POST_COUNT_FIELD ); ?>"><?php printf( __( 'Post count (max %d):', 'elasticpress' ), namespace\MAX_RELATED_POSTS ); ?> </label> 
+     <input class="widefat" id="<?php echo $this->get_field_id( namespace\POST_COUNT_FIELD ); ?>" name="<?php echo $this->get_field_name( namespace\POST_COUNT_FIELD ); ?>" type="text" value="<?php echo esc_attr( $post_count ); ?>">
   </p>
 <?php 
 }
@@ -87,12 +88,12 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
     $instance = array();
 
     /* Allow only digits */
-    $instance['ep4wpe_count'] = ( ! empty( $new_instance['ep4wpe_count'] ) ) ? preg_replace( '/[^\d]/', '', $new_instance['ep4wpe_count'] ) : '';
+    $instance[namespace\POST_COUNT_FIELD] = ( ! empty( $new_instance[namespace\POST_COUNT_FIELD] ) ) ? preg_replace( '/[^\d]/', '', $new_instance[namespace\POST_COUNT_FIELD] ) : '';
     
     /* Limit max value */
     echo namespace\MAX_RELATED_POSTS;
-    if( $instance['ep4wpe_count'] > namespace\MAX_RELATED_POSTS ) {
-      $instance['ep4wpe_count'] = namespace\MAX_RELATED_POSTS;
+    if( $instance[namespace\POST_COUNT_FIELD] > namespace\MAX_RELATED_POSTS ) {
+      $instance[namespace\POST_COUNT_FIELD] = namespace\MAX_RELATED_POSTS;
     }
 
     return $instance;
