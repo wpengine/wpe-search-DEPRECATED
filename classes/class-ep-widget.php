@@ -71,7 +71,7 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
     $post_count = ! empty( $instance['ep4wpe_count'] ) ? $instance['ep4wpe_count'] : __( '5', 'elasticpress' );
 ?>
   <p>
-     <label for="<?php echo $this->get_field_id( 'ep4wpe_count' ); ?>"><?php _e( 'Post count:' ); ?></label> 
+     <label for="<?php echo $this->get_field_id( 'ep4wpe_count' ); ?>"><?php printf( __( 'Post count (max %d):', 'elasticpress' ), namespace\MAX_RELATED_POSTS ); ?></label> 
      <input class="widefat" id="<?php echo $this->get_field_id( 'ep4wpe_count' ); ?>" name="<?php echo $this->get_field_name( 'ep4wpe_count' ); ?>" type="text" value="<?php echo esc_attr( $post_count ); ?>">
   </p>
 <?php 
