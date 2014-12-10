@@ -56,7 +56,6 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
      echo '<span>' . __( 'No related posts found.', 'elasticpress' ) . '</span>';
    }
 ?>
-</ul>
 <?php
 
 
