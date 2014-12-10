@@ -1,15 +1,15 @@
-=== ElasticPress ===
-Contributors: aaronholbrook, tlovett1, 10up
-Author URI: http://10up.com
-Plugin URI: https://github.com/10up/ElasticPress
-Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search
+=== ElasticPressForWPEngine ===
+Contributors: cgoldman@dhapdigital.com, WPEngine
+Author URI: http://dhapdigital.com
+Plugin URI: https://github.com/dhapdigitalinc/ElasticPressForWPEngine
+Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search, wpengine
 Requires at least: 3.7.1
 Tested up to: 4.1
-Stable tag: 1.2
+Stable tag: 1.2.1
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 
-Integrate Elasticsearch with WordPress.
+Integrate Elasticsearch with WordPress, running hosted on WPEngine
 
 == Description ==
 ElasticPress is a WordPress-Elasticsearch integration that overrides default `WP_Query` behavior to give you search results from Elasticsearch instead of MySQL. The plugin is built to be managed entirely via the command line. ElasticPress supports cross-site search in multi-site WordPress installs.
@@ -47,16 +47,15 @@ Before configuring the WordPress plugin, you need to decide how you want to run 
 configuring single site and multi-site cross-site search are slightly different.
 
 = Single Site =
-1. Activate the plugin.
-2. Define the constant `EP_HOST` in your wp-config.php file with the connection (and port) of your Elasticsearch application.
-3. Using WP-CLI, do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup`.
-
-= Multi-site Cross-site Search =
-1. Network activate the plugin
-2. Define the constant `EP_HOST` in your wp-config.php file with the connection (and port) of your Elasticsearch application.
-3. Using WP-CLI, do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup --network-wide`.
+1. Activate the plugin with WP-CLI. Remember to use the "--network" flag for multi-site installs: `wp plugin activate ElasticPressForWPEngine [--network]`
+2. Configure the host of your Elasticsearch server: `wp ep4wpe set-host 192.168.50.4`
+3. Do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup [--network-wide]`.  Again, use the optional flag for multi-site installs.
 
 == Changelog ==
+
+= 1.2.1 =
+* Elasticsearch host and port are configured using the Settings API.
+* More-like-this API functionality is exposed via a Related Posts widget.
 
 = 1.2 =
 * Allow number of shards and replicas to be configurable.
