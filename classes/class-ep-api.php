@@ -1143,7 +1143,7 @@ class EP_API {
 
 		$index_url = ep_get_index_url( $index );
 
-		$url = $index_url . '/post/$post_id/_mlt';
+		$url = $index_url . "/post/$post_id/_mlt";
 
 		$request = wp_remote_request( $url, array( 'method' => 'GET' ) );
 
