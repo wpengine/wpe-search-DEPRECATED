@@ -281,6 +281,23 @@ The following are special parameters that are only supported by ElasticPress.
     ) );
     ```
 
+## Related Posts Widget
+
+The plugin makes available a widget called **ElasticPress Related Posts**, with one configurable option: the number of posts to display in the widget, up to a maximum of 10.
+
+Content is only generated if the widget is on a single post page, and uses the post ID to call Elasticsearch useing its "[more like this API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-more-like-this.html)".
+
+The widget generates relatively generic HTML that may be styled to match any theme.  This is an example of the output with the option set to only one post.
+
+```html
+<ul class="ep4wpe-related-posts">
+<li>
+  <a href="http://dhap.wpengine.com/parent-child-relationship/" rel="bookmark" title="Parent / Child Relationship">Parent / Child Relationship</a>
+  <span class="post-date">June 30, 2013</span>
+</li>
+</ul>
+```
+
 ## Development
 
 ### Setup
