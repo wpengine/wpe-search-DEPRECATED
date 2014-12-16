@@ -285,7 +285,7 @@ The following are special parameters that are only supported by ElasticPress.
 
 The plugin makes available a widget called **ElasticPress Related Posts**, with one configurable option: the number of posts to display in the widget, up to a maximum of 10.
 
-Content is only generated if the widget is on a single post page, and uses the post ID to call Elasticsearch useing its "[more like this API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-more-like-this.html)".
+Content is only generated if the widget is on a single post page, and uses the post ID to call Elasticsearch using its "[more like this API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-more-like-this.html)".
 
 The widget generates relatively generic HTML that may be styled to match any theme.  This is an example of the output with the option set to only one post.
 
