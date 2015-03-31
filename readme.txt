@@ -1,15 +1,15 @@
-=== ElasticPress ===
-Contributors: aaronholbrook, tlovett1, 10up
-Author URI: http://10up.com
-Plugin URI: https://github.com/10up/ElasticPress
-Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search
+=== ElasticPressForWPEngine ===
+Contributors: cgoldman@dhapdigital.com, WPEngine
+Author URI: http://dhapdigital.com
+Plugin URI: https://github.com/dhapdigitalinc/ElasticPressForWPEngine
+Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search, wpengine
 Requires at least: 3.7.1
 Tested up to: 4.1
-Stable tag: 1.1
+Stable tag: 1.2.1
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 
-Integrate Elasticsearch with WordPress.
+Integrate Elasticsearch with WordPress, running hosted on WPEngine
 
 == Description ==
 ElasticPress is a WordPress-Elasticsearch integration that overrides default `WP_Query` behavior to give you search results from Elasticsearch instead of MySQL. The plugin is built to be managed entirely via the command line. ElasticPress supports cross-site search in multi-site WordPress installs.
@@ -32,7 +32,7 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 _Note:_ Requires [WP-CLI](http://wp-cli.org/) and [Elasticsearch](http://www.elasticsearch.org/).
 
-Please refer to [Github](https://github.com/10up/ElasticPress) for detailed usage instructions and documentation.
+Please refer to [Github](https://github.com/dhapdigitalinc/ElasticPressForWPEngine) for detailed usage instructions and documentation.
 
 == Installation ==
 1. First, you will need to properly [install and configure](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_installing_elasticsearch.html) Elasticsearch.
@@ -47,16 +47,27 @@ Before configuring the WordPress plugin, you need to decide how you want to run 
 configuring single site and multi-site cross-site search are slightly different.
 
 = Single Site =
-1. Activate the plugin.
-2. Define the constant `EP_HOST` in your wp-config.php file with the connection (and port) of your Elasticsearch application.
-3. Using WP-CLI, do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup`.
-
-= Multi-site Cross-site Search =
-1. Network activate the plugin
-2. Define the constant `EP_HOST` in your wp-config.php file with the connection (and port) of your Elasticsearch application.
-3. Using WP-CLI, do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup --network-wide`.
+1. Activate the plugin with WP-CLI. Remember to use the "--network" flag for multi-site installs: `wp plugin activate ElasticPressForWPEngine [--network]`
+2. Configure the host of your Elasticsearch server: `wp ep4wpe set-host 192.168.50.4`
+3. Do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup [--network-wide]`.  Again, use the optional flag for multi-site installs.
 
 == Changelog ==
+
+= 1.2.1 =
+* Elasticsearch host and port are configured using the Settings API.
+* More-like-this API functionality is exposed via a Related Posts widget.
+
+= 1.2 =
+* Allow number of shards and replicas to be configurable.
+* Improved searching algorithm. Favor exact matches over fuzzy matches.
+* Query stack implementation to allow for query nesting.
+* Filter and disable query integration on a per query basis.
+* Support orderby` parameter in `WP_Query
+* (Bug) We don't want to add the like_text query unless we have a non empty search string. This mimcs the behavior of MySQL or WP which will return everything if s is empty.
+* (Bug) Change delete action to action_delete_post instead of action_trash_post
+* (Bug) Remove _boost from mapping. _boost is deprecated by Elasticsearch.
+* Improve unit testing for query ordering.
+
 = 1.1 =
 * Refactored `is_alive`, `is_activated`, and `is_activated_and_alive`. We now have functions `is_activated`, `elasticsearch_alive`, `index_exists`, and `is_activated`. This refactoring helped us fix #150.
 * Add support for post_title and post_name orderby parameters in `WP_Query` integration. Add support for order parameters.

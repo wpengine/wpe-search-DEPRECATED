@@ -1,12 +1,13 @@
 <?php
+namespace ep4wpe;
 
-WP_CLI::add_command( 'elasticpress', 'ElasticPress_CLI_Command' );
+\WP_CLI::add_command( 'ep4wpe', __NAMESPACE__ . '\ElasticPress_CLI_Command' );
 
 /**
  * CLI Commands for ElasticPress
  *
  */
-class ElasticPress_CLI_Command extends WP_CLI_Command {
+class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	/**
 	 * Holds the posts that will be bulk synced.
 	 *
@@ -20,6 +21,82 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 * @since 0.9
 	 */
 	private $failed_posts = array();
+
+        /**
+         * Get the Elasticsearch host
+         *
+         * @subcommand get-host
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function get_host() {
+          $host = ep_get_server_host();
+          if( isset( $host ) ) {
+            \WP_CLI::line( $host );
+          }
+          else {
+            \WP_CLI::log( __( 'No host set', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Set the Elasticsearch host
+         *
+         * @synopsis <Elasticsearch-host>
+         * @subcommand set-host
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_host( $args, $assoc_args ) {
+          $host = $args[0];
+          if( isset( $host ) ) {
+            \WP_CLI::log( sprintf( __( 'Setting Elasticsearch host to %s', 'elasticpress' ), $host ) );
+            ep_set_server_host( $host );
+          }
+          else {
+            \WP_CLI::error( __( 'No host specified', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Get the Elasticsearch port
+         *
+         * @subcommand get-port
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function get_port() {
+          $port = ep_get_server_port();
+          if( isset( $port ) ) {
+            \WP_CLI::line( $port );
+          }
+          else {
+            \WP_CLI::error( __( 'No port set!  At least we should get the default: 9200!', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Set the Elasticsearch port
+         *
+         * @synopsis <Elasticsearch-port>
+         * @subcommand set-port
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_port( $args, $assoc_args ) {
+          $port = $args[0];
+          if( isset( $port ) ) {
+            \WP_CLI::log( sprintf( __( 'Setting Elasticsearch port to %d', 'elasticpress' ), $port ) );
+            ep_set_server_port( $port );
+          }
+          else {
+            \WP_CLI::error( __( 'No port specified', 'elasticpress' ) );
+          }
+        }
 
 	/**
 	 * Add the document mapping
@@ -40,7 +117,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			foreach ( $sites as $site ) {
 				switch_to_blog( $site['blog_id'] );
 
-				WP_CLI::line( sprintf( __( 'Adding mapping for site %d...', 'elasticpress' ), (int) $site['blog_id'] ) );
+				\WP_CLI::line( sprintf( __( 'Adding mapping for site %d...', 'elasticpress' ), (int) $site['blog_id'] ) );
 
 				// Deletes index first
 				ep_delete_index();
@@ -48,15 +125,15 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 				$result = ep_put_mapping();
 
 				if ( $result ) {
-					WP_CLI::success( __( 'Mapping sent', 'elasticpress' ) );
+					\WP_CLI::success( __( 'Mapping sent', 'elasticpress' ) );
 				} else {
-					WP_CLI::error( __( 'Mapping failed', 'elasticpress' ) );
+					\WP_CLI::error( __( 'Mapping failed', 'elasticpress' ) );
 				}
 
 				restore_current_blog();
 			}
 		} else {
-			WP_CLI::line( __( 'Adding mapping...', 'elasticpress' ) );
+			\WP_CLI::line( __( 'Adding mapping...', 'elasticpress' ) );
 
 			// Deletes index first
 			$this->delete_index( $args, $assoc_args );
@@ -64,9 +141,9 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			$result = ep_put_mapping();
 
 			if ( $result ) {
-				WP_CLI::success( __( 'Mapping sent', 'elasticpress' ) );
+				\WP_CLI::success( __( 'Mapping sent', 'elasticpress' ) );
 			} else {
-				WP_CLI::error( __( 'Mapping failed', 'elasticpress' ) );
+				\WP_CLI::error( __( 'Mapping failed', 'elasticpress' ) );
 			}
 		}
 	}
@@ -91,27 +168,27 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 			foreach ( $sites as $site ) {
 				switch_to_blog( $site['blog_id'] );
 
-				WP_CLI::line( sprintf( __( 'Deleting index for site %d...', 'elasticpress' ), (int) $site['blog_id'] ) );
+				\WP_CLI::line( sprintf( __( 'Deleting index for site %d...', 'elasticpress' ), (int) $site['blog_id'] ) );
 
 				$result = ep_delete_index();
 
 				if ( $result ) {
-					WP_CLI::success( __( 'Index deleted', 'elasticpress' ) );
+					\WP_CLI::success( __( 'Index deleted', 'elasticpress' ) );
 				} else {
-					WP_CLI::error( __( 'Delete index failed', 'elasticpress' ) );
+					\WP_CLI::error( __( 'Delete index failed', 'elasticpress' ) );
 				}
 
 				restore_current_blog();
 			}
 		} else {
-			WP_CLI::line( __( 'Deleting index...', 'elasticpress' ) );
+			\WP_CLI::line( __( 'Deleting index...', 'elasticpress' ) );
 
 			$result = ep_delete_index();
 
 			if ( $result ) {
-				WP_CLI::success( __( 'Index deleted', 'elasticpress' ) );
+				\WP_CLI::success( __( 'Index deleted', 'elasticpress' ) );
 			} else {
-				WP_CLI::error( __( 'Index delete failed', 'elasticpress' ) );
+				\WP_CLI::error( __( 'Index delete failed', 'elasticpress' ) );
 			}
 		}
 	}
@@ -129,16 +206,16 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	public function recreate_network_alias( $args, $assoc_args ) {
 		$this->_connect_check();
 
-		WP_CLI::line( __( 'Recreating network alias...', 'elasticpress' ) );
+		\WP_CLI::line( __( 'Recreating network alias...', 'elasticpress' ) );
 
 		ep_delete_network_alias();
 
 		$create_result = $this->_create_network_alias();
 
 		if ( $create_result ) {
-			WP_CLI::success( __( 'Done!', 'elasticpress' ) );
+			\WP_CLI::success( __( 'Done!', 'elasticpress' ) );
 		} else {
-			WP_CLI::error( __( 'An error occurred', 'elasticpress' ) );
+			\WP_CLI::error( __( 'An error occurred', 'elasticpress' ) );
 		}
 	}
 
@@ -190,7 +267,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		timer_start();
 
 		// Run setup if flag was passed
-		if ( true === $assoc_args['setup'] ) {
+		if ( isset( $assoc_args['setup'] ) && true === $assoc_args['setup'] ) {
 
 			// Right now setup is just the put_mapping command, as this also deletes the index(s) first
 			$this->put_mapping( $args, $assoc_args );
@@ -198,7 +275,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 		if ( ! empty( $assoc_args['network-wide'] ) ) {
 
-			WP_CLI::log( __( 'Indexing posts network-wide...', 'elasticpress' ) );
+			\WP_CLI::log( __( 'Indexing posts network-wide...', 'elasticpress' ) );
 
 			$sites = ep_get_sites();
 
@@ -209,40 +286,40 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 				$total_indexed += $result['synced'];
 
-				WP_CLI::log( sprintf( __( 'Number of posts synced on site %d: %d', 'elasticpress' ), $site['blog_id'], $result['synced'] ) );
+				\WP_CLI::log( sprintf( __( 'Number of posts synced on site %d: %d', 'elasticpress' ), $site['blog_id'], $result['synced'] ) );
 
 				if ( ! empty( $result['errors'] ) ) {
-					WP_CLI::error( sprintf( __( 'Number of post sync errors on site %d: %d', 'elasticpress' ), $site['blog_id'], count( $result['errors'] ) ) );
+					\WP_CLI::error( sprintf( __( 'Number of post sync errors on site %d: %d', 'elasticpress' ), $site['blog_id'], count( $result['errors'] ) ) );
 				}
 
 				restore_current_blog();
 			}
 
-			WP_CLI::log( __( 'Recreating network alias...', 'elasticpress' ) );
+			\WP_CLI::log( __( 'Recreating network alias...', 'elasticpress' ) );
 
 			$this->_create_network_alias();
 
-			WP_CLI::log( sprintf( __( 'Total number of posts indexed: %d', 'elasticpress' ), $total_indexed ) );
+			\WP_CLI::log( sprintf( __( 'Total number of posts indexed: %d', 'elasticpress' ), $total_indexed ) );
 
 		} else {
 
-			WP_CLI::log( __( 'Indexing posts...', 'elasticpress' ) );
+			\WP_CLI::log( __( 'Indexing posts...', 'elasticpress' ) );
 
 			$result = $this->_index_helper( isset( $assoc_args['no-bulk'] ), $assoc_args['posts-per-page'] );
 
-			WP_CLI::log( sprintf( __( 'Number of posts synced on site %d: %d', 'elasticpress' ), get_current_blog_id(), $result['synced'] ) );
+			\WP_CLI::log( sprintf( __( 'Number of posts synced on site %d: %d', 'elasticpress' ), get_current_blog_id(), $result['synced'] ) );
 
 			if ( ! empty( $result['errors'] ) ) {
-				WP_CLI::error( sprintf( __( 'Number of post sync errors on site %d: %d', 'elasticpress' ), get_current_blog_id(), count( $result['errors'] ) ) );
+				\WP_CLI::error( sprintf( __( 'Number of post sync errors on site %d: %d', 'elasticpress' ), get_current_blog_id(), count( $result['errors'] ) ) );
 			}
 		}
 
-		WP_CLI::log( WP_CLI::colorize( '%Y' . __( 'Total time elapsed: ', 'elasticpress' ) . '%N' . timer_stop() ) );
+		\WP_CLI::log( \WP_CLI::colorize( '%Y' . __( 'Total time elapsed: ', 'elasticpress' ) . '%N' . timer_stop() ) );
 
 		// Reactivate our search integration
 		$this->activate();
 
-		WP_CLI::success( __( 'Done!', 'elasticpress' ) );
+		\WP_CLI::success( __( 'Done!', 'elasticpress' ) );
 	}
 
 	/**
@@ -269,7 +346,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 				'ignore_sticky_posts' => true
 			) );
 
-			$query = new WP_Query( $args );
+			$query = new \WP_Query( $args );
 
 			if ( $query->have_posts() ) {
 
@@ -293,7 +370,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 				break;
 			}
 
-			WP_CLI::log( 'Indexed ' . ( $query->post_count + $offset ) . '/' . $query->found_posts . ' entries. . .' );
+			\WP_CLI::log( 'Indexed ' . ( $query->post_count + $offset ) . '/' . $query->found_posts . ' entries. . .' );
 
 			$offset += $posts_per_page;
 
@@ -371,7 +448,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 		// make sure we actually have something to index
 		if ( empty( $this->posts ) ) {
-			WP_CLI::error( 'There are no posts to index.' );
+			\WP_CLI::error( 'There are no posts to index.' );
 		}
 
 		$flatten = array();
@@ -386,14 +463,14 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 
 		// show the content length in bytes if in debug
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			WP_CLI::log( 'Request string length: ' . size_format( mb_strlen( $body, '8bit' ), 2 ) );
+			\WP_CLI::log( 'Request string length: ' . size_format( mb_strlen( $body, '8bit' ), 2 ) );
 		}
 
 		// decode the response
 		$response = ep_bulk_index_posts( $body );
 
 		if ( is_wp_error( $response ) ) {
-			WP_CLI::error( implode( "\n", $response->get_error_messages() ) );
+			\WP_CLI::error( implode( "\n", $response->get_error_messages() ) );
 		}
 
 		// if we did have errors, try to add the documents again
@@ -436,7 +513,7 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 				fwrite( STDOUT, __( 'Failed to send bulk error email. Print on screen? [y/n] ' ) );
 				$answer = trim( fgets( STDIN ) );
 				if ( 'y' == $answer ) {
-					WP_CLI::log( $email_text );
+					\WP_CLI::log( $email_text );
 				}
 			}
 		}
@@ -451,17 +528,17 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	public function status() {
 		$this->_connect_check();
 
-		$request = wp_remote_get( trailingslashit( EP_HOST ) . '_status/?pretty' );
+		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_status/?pretty' );
 
 		if ( is_wp_error( $request ) ) {
-			WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+			\WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
 		}
 
 		$body = wp_remote_retrieve_body( $request );
-		WP_CLI::line( '' );
-		WP_CLI::line( '====== Status ======' );
-		WP_CLI::line( print_r( $body, true ) );
-		WP_CLI::line( '====== End Status ======' );
+		\WP_CLI::line( '' );
+		\WP_CLI::line( '====== Status ======' );
+		\WP_CLI::line( print_r( $body, true ) );
+		\WP_CLI::line( '====== End Status ======' );
 	}
 
 	/**
@@ -472,20 +549,17 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	public function stats() {
 		$this->_connect_check();
 
-		$request = wp_remote_get( trailingslashit( EP_HOST ) . '_stats/' );
-		if ( is_wp_error( $request ) ) {
-			WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
-		}
-		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
-		$current_index = ep_get_index_name();
+                $stats_map = ep_stats();
+                $current_index = ep_get_index_name();
 
-		if ( isset( $body['indices'][$current_index] ) ) {
-			WP_CLI::log( '====== Stats for: ' . $current_index . " ======" );
-			WP_CLI::log( 'Documents:  ' . $body['indices'][$current_index]['total']['docs']['count'] );
-			WP_CLI::log( 'Index Size: ' . size_format( $body['indices'][$current_index]['total']['store']['size_in_bytes'], 2 ) );
-			WP_CLI::log( '====== End Stats ======' );
+
+		if ( isset( $stats_map ) ) {
+			\WP_CLI::log( '====== Stats for: ' . $current_index . " ======" );
+			\WP_CLI::log( 'Documents:  ' . $stats_map['total']['docs']['count'] );
+			\WP_CLI::log( 'Index Size: ' . size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
+			\WP_CLI::log( '====== End Stats ======' );
 		} else {
-			WP_CLI::warning( $current_index . ' is not currently indexed.' );
+			\WP_CLI::warning( $current_index . ' is not currently indexed.' );
 		}
 	}
 
@@ -500,16 +574,16 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		$status = ep_is_activated();
 
 		if ( $status ) {
-			WP_CLI::warning( 'ElasticPress is already activated.' );
+			\WP_CLI::warning( 'ElasticPress is already activated.' );
 		} else {
-			WP_CLI::log( 'ElasticPress is currently deactivated, activating...' );
+			\WP_CLI::log( 'ElasticPress is currently deactivated, activating...' );
 
 			$result = ep_activate();
 
 			if ( $result ) {
-				WP_CLI::Success( 'ElasticPress was activated!' );
+				\WP_CLI::Success( 'ElasticPress was activated!' );
 			} else {
-				WP_CLI::warning( 'ElasticPress was unable to be activated.' );
+				\WP_CLI::warning( 'ElasticPress was unable to be activated.' );
 			}
 		}
 	}
@@ -525,16 +599,16 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		$status = ep_is_activated();
 
 		if ( ! $status ) {
-			WP_CLI::warning( 'ElasticPress is already deactivated.' );
+			\WP_CLI::warning( 'ElasticPress is already deactivated.' );
 		} else {
-			WP_CLI::log( 'ElasticPress is currently activated, deactivating...' );
+			\WP_CLI::log( 'ElasticPress is currently activated, deactivating...' );
 
 			$result = ep_deactivate();
 
 			if ( $result ) {
-				WP_CLI::Success( 'ElasticPress was deactivated!' );
+				\WP_CLI::Success( 'ElasticPress was deactivated!' );
 			} else {
-				WP_CLI::warning( 'ElasticPress was unable to be deactivated.' );
+				\WP_CLI::warning( 'ElasticPress was unable to be deactivated.' );
 			}
 		}
 	}
@@ -552,9 +626,9 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 		$active = ep_is_activated();
 
 		if ( $active ) {
-			WP_CLI::log( 'ElasticPress is currently activated.' );
+			\WP_CLI::log( 'ElasticPress is currently activated.' );
 		} else {
-			WP_CLI::log( 'ElasticPress is currently deactivated.' );
+			\WP_CLI::log( 'ElasticPress is currently deactivated.' );
 		}
 	}
 
@@ -564,12 +638,13 @@ class ElasticPress_CLI_Command extends WP_CLI_Command {
 	 * @since 0.9.3
 	 */
 	private function _connect_check() {
-		if ( ! defined( 'EP_HOST' ) ) {
-			WP_CLI::error( __( 'EP_HOST is not defined! Check wp-config.php', 'elasticpress' ) );
+		$ep_server_url = ep_get_server_url();
+		if ( ! isset( $ep_server_url ) ) {
+			\WP_CLI::error( __( 'The Elasticsearch server URL is not defined! You should be calling "set-host", at least.', 'elasticpress' ) );
 		}
 
 		if ( false === ep_elasticsearch_alive() ) {
-			WP_CLI::error( __( 'Unable to reach Elasticsearch Server! Check that service is running.', 'elasticpress' ) );
+			\WP_CLI::error( __( 'Unable to reach Elasticsearch Server! Check that service is running.', 'elasticpress' ) );
 		}
 	}
 }
