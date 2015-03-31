@@ -3,10 +3,10 @@
 /**
  * Plugin Name: ElasticPress For WP Engine
  * Description: Integrate WPEngine WordPress search with Elasticsearch
- * Version:     1.2.1
- * Author:      Christopher Goldman, DHAP Digital, Inc.
- * Author URI:  http://dhapdigital.com
- * License:     MIT
+ * Version:     1.3.1
+ * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up, Christopher Goldman, DHAP Digital, Inc.
+ * Author URI:  http://10up.com http://dhapdigital.com
+ * License:     GPLv2 or later
  *
  * It is a fork of https://github.com/10up/ElasticPress
  *
