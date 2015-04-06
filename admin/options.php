@@ -55,25 +55,6 @@ function ep4wpe_settings_init() {
                        'ep4wpe_settings_page'
                        );
 
-  add_settings_field(
-                     'ep4wpe_elasticsearch_server_host',
-                     'ES host (name or address)',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_host' )
-                     );
-
-  add_settings_field(
-                     'ep4wpe_elasticsearch_server_port',
-                     'ES port number',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_port', 'default' => '9200' )
-                     );
-
-
 }
 
 
