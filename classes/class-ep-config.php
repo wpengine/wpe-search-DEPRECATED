@@ -3,6 +3,8 @@ namespace ep4wpe;
 
 define( __NAMESPACE__ . '\host', __NAMESPACE__ . '_host' );
 define( __NAMESPACE__ . '\port', __NAMESPACE__ . '_port' );
+define( __NAMESPACE__ . '\memcached_host', __NAMESPACE__ . 'memcached__host' );
+define( __NAMESPACE__ . '\memcached_port', __NAMESPACE__ . 'memcached__port' );
 
 class EP_Config {
 
@@ -79,6 +81,52 @@ class EP_Config {
         public function set_server_port( $port = null ) {
           if( isset( $port ) && preg_match( '^\d{1,5}$', $port ) && $port < 65536 ) {
             update_site_option( constant( __NAMESPACE__ . '\port' ), $port );
+          }
+        }
+
+	/**
+	 * Gets the host name or address of the memcached server.
+	 *
+	 * @since 1.3.1
+	 * @return string Host name or IP address
+	 */
+        public function get_memcached_host() {
+          return get_site_option( constant( __NAMESPACE__ . '\memcached_host' ), 'localhost' );
+        }
+
+	/**
+	 * Sets the host name or address of the memcached server.
+	 *
+	 * @param string $host (optional) Port number.  If null, do nothing.
+	 * @since 1.3.1
+	 * @return nil
+	 */
+        public function set_memcached_host( $host = null ) {
+          if( isset( $host ) ) {
+            update_site_option( constant( __NAMESPACE__ . '\memcached_host' ), $host );
+          }
+        }
+
+	/**
+	 * Gets the port number of the memcached server.
+	 *
+	 * @since 1.3.1
+	 * @return integer A port number (1-65535)
+	 */
+        public function get_memcached_port() {
+          return get_site_option( constant( __NAMESPACE__ . '\memcached_port' ), 11211 );
+        }
+
+	/**
+	 * Sets the port number of the memcached server.
+	 *
+	 * @param string $port (optional) Port number.  If null, do nothing.
+	 * @since 1.3.1
+	 * @return nil
+	 */
+        public function set_memcached_port( $port = null ) {
+          if( isset( $port ) && preg_match( '^\d{1,5}$', $port ) && $port < 65536 ) {
+            update_site_option( constant( __NAMESPACE__ . '\memcached_port' ), $port );
           }
         }
 
@@ -206,5 +254,21 @@ function ep_set_server_port( $port = null ) {
 
 function ep_get_server_url() {
   return EP_Config::factory()->get_server_url();
+}
+
+function ep_get_memcached_host() {
+  return EP_Config::factory()->get_memcached_host();
+}
+
+function ep_set_memcached_host( $host = null ) {
+  return EP_Config::factory()->set_memcached_host( $host );
+}
+
+function ep_get_memcached_port() {
+  return EP_Config::factory()->get_memcached_port();
+}
+
+function ep_set_memcached_port( $port = null ) {
+  return EP_Config::factory()->set_memcached_port( $port );
 }
 

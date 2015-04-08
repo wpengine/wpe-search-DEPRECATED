@@ -98,6 +98,82 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
           }
         }
 
+        /**
+         * Get the memcached host
+         *
+         * @subcommand get-memcached-host
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function get_memcached_host() {
+          $host = ep_get_memcached_host();
+          if( isset( $host ) ) {
+            \WP_CLI::line( $host );
+          }
+          else {
+            \WP_CLI::log( __( 'No memcached host set', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Set the memcached host
+         *
+         * @synopsis <memcached-host>
+         * @subcommand set-memcached-host
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_memcached_host( $args, $assoc_args ) {
+          $host = $args[0];
+          if( isset( $host ) ) {
+            \WP_CLI::log( sprintf( __( 'Setting memcached host to %s', 'elasticpress' ), $host ) );
+            ep_set_memcached_host( $host );
+          }
+          else {
+            \WP_CLI::error( __( 'No memcached host specified', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Get the memcached port
+         *
+         * @subcommand get-memcached-port
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function get_memcached_port() {
+          $port = ep_get_memcached_port();
+          if( isset( $port ) ) {
+            \WP_CLI::line( $port );
+          }
+          else {
+            \WP_CLI::error( __( 'No memcached port set!  At least we should get the default: 9200!', 'elasticpress' ) );
+          }
+        }
+
+        /**
+         * Set the memcached port
+         *
+         * @synopsis <memcached-port>
+         * @subcommand set-memcached-port
+         *
+         * @param array $args
+         * @param array $assoc_args
+         */
+        public function set_memcached_port( $args, $assoc_args ) {
+          $port = $args[0];
+          if( isset( $port ) ) {
+            \WP_CLI::log( sprintf( __( 'Setting memcached port to %d', 'elasticpress' ), $port ) );
+            ep_set_memcached_port( $port );
+          }
+          else {
+            \WP_CLI::error( __( 'No memcached port specified', 'elasticpress' ) );
+          }
+        }
+
 	/**
 	 * Add the document mapping
 	 *
