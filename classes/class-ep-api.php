@@ -1166,7 +1166,6 @@ class EP_API {
 
 		switch ( $orderby ) {
 			case 'relevance':
-			default:
 				$sort = array(
 					array(
 						'_score' => array(
@@ -1176,6 +1175,7 @@ class EP_API {
 				);
 				break;
 			case 'date':
+			default:
 				$sort = array(
 					array(
 						'post_date' => array(
