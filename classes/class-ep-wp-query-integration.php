@@ -305,7 +305,7 @@ class EP_WP_Query_Integration {
 
         public function filter_check_query_cache( $posts, $query ) {
           $cache = new \Memcache;
-          if( ! $cache->connect( $this->memcached_host, $this->memcached_port ) ) {
+          if( ! @$cache->connect( $this->memcached_host, $this->memcached_port ) ) {
             error_log( 'Cannot connect to memcache @ ' . $this->memcached_host . ':' . $this->memcached_port );
             return $posts;
           }
@@ -330,7 +330,7 @@ class EP_WP_Query_Integration {
 
         public function action_cache_query_results( $posts, $search, $query ) {
           $cache = new \Memcache;
-          if( ! $cache->connect( $this->memcached_host, $this->memcached_port ) ) {
+          if( ! @$cache->connect( $this->memcached_host, $this->memcached_port ) ) {
             error_log( 'Cannot connect to memcache @ ' . $this->memcached_host . ':' . $this->memcached_port );
             return;
           }
