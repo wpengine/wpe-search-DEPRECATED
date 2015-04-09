@@ -310,7 +310,7 @@ class EP_WP_Query_Integration {
             return $posts;
           }
           
-          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true )
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
 
           $results = $cache->get( $key );
           
@@ -335,7 +335,7 @@ class EP_WP_Query_Integration {
             return;
           }
 
-          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true )
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
 
           $is_query_cached = $cache->set( $key, $posts );
 
