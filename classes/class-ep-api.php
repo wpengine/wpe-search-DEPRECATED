@@ -1,4 +1,7 @@
 <?php
+namespace ep4wpe;
+
+define( __NAMESPACE__ . '\is_active_option', __NAMESPACE__ . '_is_active' );
 
 class EP_API {
 
@@ -87,19 +90,7 @@ class EP_API {
 	 * @return array
 	 */
 	public function search( $args, $scope = 'current' ) {
-		$index = null;
-
-		if ( 'all' === $scope ) {
-			$index = ep_get_network_alias();
-		} elseif ( is_int( $scope ) ) {
-			$index = ep_get_index_name( $scope );
-		} elseif ( is_array( $scope ) ) {
-			$index = array();
-
-			foreach ( $scope as $site_id ) {
-				$index[] = ep_get_index_name( $site_id );
-			}
-		}
+		$index = $this->_get_index( $scope );
 
 		$index_url = ep_get_index_url( $index );
 
@@ -138,7 +129,7 @@ class EP_API {
 			return array( 'found_posts' => $response['hits']['total'], 'posts' => $posts );
 		}
 
-		return array( 'found_posts' => 0, 'posts' => array() );
+		return false;
 	}
 
 	/**
@@ -227,7 +218,7 @@ class EP_API {
 	 * @return bool|array
 	 */
 	public function delete_network_alias() {
-		$url = untrailingslashit( EP_HOST ) . '/*/_alias/' . ep_get_network_alias();
+		$url = untrailingslashit( ep_get_server_url() ) . '/*/_alias/' . ep_get_network_alias();
 
 		$request = wp_remote_request( $url, array( 'method' => 'DELETE' ) );
 
@@ -248,7 +239,7 @@ class EP_API {
 	 * @return array|bool
 	 */
 	public function create_network_alias( $indexes ) {
-		$url = untrailingslashit( EP_HOST ) . '/_aliases';
+		$url = untrailingslashit( ep_get_server_url() ) . '/_aliases';
 
 		$args = array(
 			'actions' => array()
@@ -283,12 +274,16 @@ class EP_API {
 	public function put_mapping() {
 		$mapping = array(
 			'settings' => array(
+				'index' => array(
+					'number_of_shards' => (int) apply_filters( 'ep_default_index_number_of_shards', 5 ), // Default within Elasticsearch
+					'number_of_replicas' => (int) apply_filters( 'ep_default_index_number_of_replicas', 1 ), // Default within Elasticsearch
+				),
 				'analysis' => array(
 					'analyzer' => array(
 						'default' => array(
 							'tokenizer' => 'standard',
 							'filter' => array( 'standard', 'ewp_word_delimiter', 'lowercase', 'stop', 'ewp_snowball' ),
-							'language' => 'English'
+							'language' => apply_filters( 'ep_analyzer_language', 'English' ),
 						),
 						'shingle_analyzer' => array(
 							'type' => 'custom',
@@ -308,8 +303,8 @@ class EP_API {
 						),
 						'ewp_snowball' => array(
 							'type' => 'snowball',
-							'language' => 'English'
-						),
+							'language' =>  apply_filters( 'ep_analyzer_language', 'English' ),
+							),
 						'edge_ngram' => array(
 							'side' => 'front',
 							'max_gram' => 10,
@@ -425,7 +420,6 @@ class EP_API {
 								'post_title' => array(
 									'type' => 'string',
 									'analyzer' => 'standard',
-									'_boost' => 3.0,
 									'store' => 'yes'
 								),
 								'raw' => array(
@@ -436,8 +430,7 @@ class EP_API {
 							)
 						),
 						'post_excerpt' => array(
-							'type' => 'string',
-							'_boost'  => 2.0
+							'type' => 'string'
 						),
 						'post_content' => array(
 							'type' => 'string',
@@ -445,7 +438,7 @@ class EP_API {
 						),
 						'post_status' => array(
 							'type' => 'string',
-							'index' => 'no'
+							'index' => 'not_analyzed'
 						),
 						'post_name' => array(
 							'type' => 'multi_field',
@@ -512,6 +505,8 @@ class EP_API {
 		$index_url = ep_get_index_url();
 
 		$request = wp_remote_request( $index_url, array( 'body' => json_encode( $mapping ), 'method' => 'PUT' ) );
+
+		$request = apply_filters( 'ep_config_mapping_request', $request, $index_url, $mapping );
 
 		if ( ! is_wp_error( $request ) && 200 === wp_remote_retrieve_response_code( $request ) ) {
 			$response_body = wp_remote_retrieve_body( $request );
@@ -581,7 +576,7 @@ class EP_API {
 			'post_title'        => get_the_title( $post_id ),
 			'post_excerpt'      => $post->post_excerpt,
 			'post_content'      => apply_filters( 'the_content', $post->post_content ),
-			'post_status'       => 'publish',
+			'post_status'       => $post->post_status,
 			'post_name'         => $post->post_name,
 			'post_modified'     => $post_modified,
 			'post_modified_gmt' => $post_modified_gmt,
@@ -816,6 +811,99 @@ class EP_API {
 		}
 
 		/**
+		 * 'meta_query' arg support.
+		 *
+		 * Relation supports 'AND' and 'OR'. 'AND' is the default. For each individual query, the
+		 * following 'compare' values are supported: =, !=, EXISTS, NOT EXISTS. '=' is the default.
+		 * 'type' is NOT support at this time.
+		 *
+		 * @since 1.3
+		 */
+		if ( ! empty( $args['meta_query'] ) ) {
+			$meta_filter = array();
+
+			$relation = 'must';
+			if ( ! empty( $args['meta_query']['relation'] ) && 'or' === strtolower( $args['meta_query']['relation'] ) ) {
+				$relation = 'should';
+			}
+
+			foreach( $args['meta_query'] as $single_meta_query ) {
+				if ( ! empty( $single_meta_query['key'] ) ) {
+
+					$terms_obj = false;
+
+					$compare = '=';
+					if ( ! empty( $single_meta_query['compare'] ) ) {
+						$compare = strtolower( $single_meta_query['compare'] );
+					}
+
+					switch ( $compare ) {
+						case '!=':
+							if ( isset( $single_meta_query['value'] ) ) {
+								$terms_obj = array(
+									'bool' => array(
+										'must_not' => array(
+											array(
+												'terms' => array(
+													'post_meta.' . $single_meta_query['key'] . '.raw' => (array) $single_meta_query['value'],
+												),
+											),
+										),
+									),
+								);
+							}
+
+							break;
+						case 'exists':
+							$terms_obj = array(
+								'exists' => array(
+									'field' => 'post_meta.' . $single_meta_query['key'],
+								),
+							);
+
+							break;
+						case 'not exists':
+							$terms_obj = array(
+								'bool' => array(
+									'must_not' => array(
+										array(
+											'exists' => array(
+												'field' => 'post_meta.' . $single_meta_query['key'],
+											),
+										),
+									),
+								),
+							);
+
+							break;
+						case '=':
+						default:
+							if ( isset( $single_meta_query['value'] ) ) {
+								$terms_obj = array(
+									'terms' => array(
+										'post_meta.' . $single_meta_query['key'] . '.raw' => (array) $single_meta_query['value'],
+									),
+								);
+							}
+
+							break;
+					}
+
+					// Add the meta query filter
+					if ( false !== $terms_obj ) {
+						$meta_filter[] = $terms_obj;
+					}
+				}
+			}
+
+			if ( ! empty( $meta_filter ) ) {
+				$filter['and'][]['bool'][$relation] = $meta_filter;
+
+				$use_filters = true;
+			}
+		}
+
+		/**
 		 * Allow for search field specification
 		 *
 		 * @since 1.0
@@ -863,36 +951,63 @@ class EP_API {
 
 		$query = array(
 			'bool' => array(
-				'must' => array(
-					'fuzzy_like_this' => array(
-						'fields' => $search_fields,
-						'like_text' => '',
-						'min_similarity' => apply_filters( 'ep_min_similarity', 0.75 )
+				'should' => array(
+					array(
+						'multi_match' => array(
+							'query' => '',
+							'fields' => $search_fields,
+							'boost' => apply_filters( 'ep_match_boost', 2 ),
+						)
 					),
+					array(
+						'fuzzy_like_this' => array(
+							'fields' => $search_fields,
+							'like_text' => '',
+							'min_similarity' => apply_filters( 'ep_min_similarity', 0.75 )
+						),
+					)
 				),
 			),
 		);
-		if ( ! empty( $args['s'] ) && ! isset( $args['ep_match_all'] ) ) {
-			$query['bool']['must']['fuzzy_like_this']['like_text'] = $args['s'];
+
+		/**
+		 * We are using ep_integrate instead of ep_match_all. ep_match_all will be
+		 * supported for legacy code but may be deprecated and removed eventually.
+		 *
+		 * @since 1.3
+		 */
+
+		if ( ! empty( $args['s'] ) && empty( $args['ep_match_all'] ) && empty( $args['ep_integrate'] ) ) {
+			$query['bool']['should'][1]['fuzzy_like_this']['like_text'] = $args['s'];
+			$query['bool']['should'][0]['multi_match']['query'] = $args['s'];
 			$formatted_args['query'] = $query;
-		} else if ( isset( $args['ep_match_all'] ) && true === $args['ep_match_all'] ) {
+		} else if ( ! empty( $args['ep_match_all'] ) || ! empty( $args['ep_integrate'] ) ) {
 			$formatted_args['query']['match_all'] = array();
 		}
 
-		if ( isset( $args['post_type'] ) ) {
-			$post_types = (array) $args['post_type'];
-			$terms_map_name = 'terms';
-			if ( count( $post_types ) < 2 ) {
-				$terms_map_name = 'term';
+		/**
+		 * Like WP_Query in search context, if no post_type is specified we default to "any". To
+		 * be safe you should ALWAYS specify the post_type parameter UNLIKE with WP_Query.
+		 *
+		 * @since 1.3
+		 */
+		if ( ! empty( $args['post_type'] ) ) {
+			// should NEVER be "any" but just in case
+			if ( 'any' !== $args['post_type'] ) {
+				$post_types = (array) $args['post_type'];
+				$terms_map_name = 'terms';
+				if ( count( $post_types ) < 2 ) {
+					$terms_map_name = 'term';
+				}
+
+				$filter['and'][] = array(
+					$terms_map_name => array(
+						'post_type.raw' => $post_types,
+					),
+				);
+
+				$use_filters = true;
 			}
-
-			$filter['and'][] = array(
-				$terms_map_name => array(
-					'post_type.raw' => $post_types,
-				),
-			);
-
-			$use_filters = true;
 		}
 
 		if ( isset( $args['offset'] ) ) {
@@ -936,7 +1051,7 @@ class EP_API {
 			}
 		}
 
-		return apply_filters( 'ep_formatted_args', $formatted_args );
+		return apply_filters( 'ep_formatted_args', $formatted_args, $args );
 	}
 
 	/**
@@ -945,7 +1060,7 @@ class EP_API {
 	 * @return mixed|void
 	 */
 	public function get_sites() {
-		return apply_filters( 'ep_indexable_sites', wp_get_sites() );
+          return is_multisite() ? apply_filters( 'ep_indexable_sites', wp_get_sites() ) : array();
 	}
 
 	/**
@@ -957,7 +1072,7 @@ class EP_API {
 	 */
 	public function bulk_index_posts( $body ) {
 		// create the url with index name and type so that we don't have to repeat it over and over in the request (thereby reducing the request size)
-		$url     = trailingslashit( EP_HOST ) . trailingslashit( ep_get_index_name() ) . 'post/_bulk';
+		$url     = trailingslashit( ep_get_server_url() ) . trailingslashit( ep_get_index_name() ) . 'post/_bulk';
 		$request = wp_remote_request( $url, array( 'method' => 'POST', 'body' => $body ) );
 
 		return is_wp_error( $request ) ? $request : json_decode( wp_remote_retrieve_body( $request ), true );
@@ -975,7 +1090,9 @@ class EP_API {
 
 		if ( $query->is_search() ) {
 			$enabled = true;
-		} else if ( isset( $query->query['ep_match_all'] ) && true === $query->query['ep_match_all'] ) {
+		} elseif ( ! empty( $query->query['ep_match_all'] ) ) { // ep_match_all is supported for legacy reasons
+			$enabled = true;
+		} elseif ( ! empty( $query->query['ep_integrate'] ) ) {
 			$enabled = true;
 		}
 
@@ -989,7 +1106,7 @@ class EP_API {
 	 * @since 1.0.0
 	 */
 	public function deactivate() {
-		return delete_site_option( 'ep_is_active' );
+          return delete_site_option( constant( __NAMESPACE__ . '\is_active_option' ) );
 	}
 
 	/**
@@ -999,7 +1116,7 @@ class EP_API {
 	 * @since 1.0.0
 	 */
 	public function activate() {
-		return update_site_option( 'ep_is_active', true );
+          return update_site_option( constant( __NAMESPACE__ . '\is_active_option' ), true );
 	}
 
 	/**
@@ -1078,7 +1195,8 @@ class EP_API {
 	 * @since 0.9.2
 	 */
 	public function is_activated() {
-		return get_site_option( 'ep_is_active', false, false );
+          //          echo constant( __NAMESPACE__ . '\is_active_option' ) . "\n";
+          return get_site_option( constant( __NAMESPACE__ . '\is_active_option' ), false, false );
 	}
 
 	/**
@@ -1091,7 +1209,7 @@ class EP_API {
 	public function elasticsearch_alive() {
 		$elasticsearch_alive = false;
 
-		$url = EP_HOST;
+		$url = ep_get_server_url();
 
 		$request = wp_remote_request( $url );
 
@@ -1105,30 +1223,99 @@ class EP_API {
 	}
 
 	/**
-	 * Ensures that this index exists
+	 * Get stats on the current index.
 	 *
-	 * @param null $index
-	 *
-	 * @return bool
-	 * @since 1.1.0
+         * @return array
+	 * @since 0.9.2
 	 */
-	public function index_exists( $index = null ) {
-		$index_exists = false;
+	public function stats( $blog_id = null ) {
+		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
+		if ( is_wp_error( $request ) ) {
+                  WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+		}
+		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
+		$current_index = ep_get_index_name( $blog_id );
+
+		return isset( $body['indices'][$current_index] ) ? $body['indices'][$current_index] : null;
+	}
+
+        /**
+         * Determine the index variable to be passed to ep_get_index_url.
+         *
+	 * @param string $scope
+         * @since 1.1.1
+         * @return mixed
+         */
+        private function _get_index( $scope = 'current' ) {
+		$index = null;
+
+		if ( 'all' === $scope ) {
+			$index = ep_get_network_alias();
+		} elseif ( is_int( $scope ) ) {
+			$index = ep_get_index_name( $scope );
+		} elseif ( is_array( $scope ) ) {
+			$index = array();
+
+			foreach ( $scope as $site_id ) {
+				$index[] = ep_get_index_name( $site_id );
+			}
+		}
+                return $index;
+        }
+
+
+	/**
+	 * Search for posts under a specific site index or the global index ($site_id = 0).
+	 *
+	 * @param intval $post_id
+	 * @since 1.1.1
+	 * @return array
+	 */
+	public function more_like_this( $post_id, $scope = 'current' ) {
+		$index = $this->_get_index( $scope );
 
 		$index_url = ep_get_index_url( $index );
 
-		$url = $index_url . '/_status';
+		$url = $index_url . "/post/$post_id/_mlt";
 
-		$request = wp_remote_request( $url );
+		$request = wp_remote_request( $url, array( 'method' => 'GET' ) );
 
 		if ( ! is_wp_error( $request ) ) {
-			if ( isset( $request['response']['code'] ) && 200 === $request['response']['code'] ) {
-				$index_exists = true;
+
+			// Allow for direct response retrieval
+			do_action( 'ep_retrieve_raw_response', $request, array(), $scope );
+
+			$response_body = wp_remote_retrieve_body( $request );
+
+			$response = json_decode( $response_body, true );
+
+			if ( $this->is_empty_search( $response ) ) {
+				return array( 'found_posts' => 0, 'posts' => array() );
 			}
+
+			$hits = $response['hits']['hits'];
+
+			// Check for and store aggregations
+			if ( ! empty( $response['aggregations'] ) ) {
+				do_action( 'ep_retrieve_aggregations', $response['aggregations'], $args, $scope );
+			}
+
+			$posts = array();
+
+			foreach ( $hits as $hit ) {
+				$post = $hit['_source'];
+				$post['site_id'] = $this->parse_site_id( $hit['_index'] );
+				$posts[] = $post;
+			}
+
+			return array( 'found_posts' => $response['hits']['total'], 'posts' => $posts );
 		}
 
-		return $index_exists;
+		return array( 'found_posts' => 0, 'posts' => array() );
 	}
+
+
+
 }
 
 EP_API::factory();
@@ -1209,6 +1396,11 @@ function ep_elasticsearch_alive() {
 	return EP_API::factory()->elasticsearch_alive();
 }
 
-function ep_index_exists() {
-	return EP_API::factory()->index_exists();
+function ep_stats() {
+  return EP_API::factory()->stats();
 }
+
+function ep_more_like_this( $post_id, $scope ) {
+  return EP_API::factory()->more_like_this( $post_id, $scope );
+}
+

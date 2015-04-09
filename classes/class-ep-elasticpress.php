@@ -1,4 +1,5 @@
 <?php
+namespace ep4wpe;
 
 class EP_ElasticPress {
 
