@@ -26,16 +26,19 @@ function ep4wpe_elasticsearch_server_section() {
 
   $stats_map = ep4wpe\ep_stats();
   $index_button_label = 'Index site';
+  $content = '';
   if( isset( $stats_map ) ) {
     $index_button_label = 'Re-index site';
-?>
-    <?php printf( "<div>Search index contains %s documents, utilizing %s of disk space", $stats_map['total']['docs']['count'], size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) ); ?> 
-<?php
-  }
-?>
-  <div><a href="<?php echo admin_url( 'options-general.php?page=ep4wpe-plugin&ep_index=true' ); ?>" class="button secondary-button" onclick="javascript:">Re-index site</a></div>
+    $doc_count = $stats_map['total']['docs']['count'];
+    $docs_size = size_format( $stats_map['total']['store']['size_in_bytes'] , 2 );
+    $button_url = admin_url( 'options-general.php?page=ep4wpe-plugin&ep_index=true' );
 
-<?php
+    $content .= "<div>Search index contains $doc_count documents, utilizing $docs_size of disk space</div>";
+  }
+  $content .= "<div><a href=\"$button_url\" class=\"button secondary-button\">$index_button_label</a></div>";
+
+  echo $content;
+
 }
 
 function ep4wpe_print_field_callback( $args ) {
@@ -92,3 +95,4 @@ function ep4wpe_settings_init() {
 add_action( 'admin_menu', 'ep4wpe_custom_admin_menu' );
  
 add_action( 'admin_init', 'ep4wpe_settings_init' );
+
