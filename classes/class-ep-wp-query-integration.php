@@ -310,7 +310,9 @@ class EP_WP_Query_Integration {
             return $posts;
           }
           
-          $results = $cache->get( var_export( $query->query_vars, true ) );
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true )
+
+          $results = $cache->get( $key );
           
           if( $results ) {
             if( is_array( $results ) ) {
@@ -333,7 +335,9 @@ class EP_WP_Query_Integration {
             return;
           }
 
-          $is_query_cached = $cache->set( var_export( $query->query_vars, true ), $posts );
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true )
+
+          $is_query_cached = $cache->set( $key, $posts );
 
           if( ! $is_query_cached ) {
             error_log( 'Unable to cache results for WP_Query: ' . var_export( $query->query_vars, true ) );
