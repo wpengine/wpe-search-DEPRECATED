@@ -1412,8 +1412,6 @@ class EP_API {
 	 * @return bool
 	 */
 	public function index_all() {
-          $is_success = true;
-
           $this->deactivate();
 
           if( ! $this->delete_index() ) {
@@ -1427,13 +1425,13 @@ class EP_API {
           $results = $this->_index_helper();
 
           if( $results['errors'] ) {
-            echo 'PROBLEMS PROBLEMS PROBLEMS PROBLEMS PROBLEMS PROBLEMS';
+            error_log( $results['errors'] );
             return false;
           }
 
           $this->activate();
 
-          return $is_success;
+          return true;
 	}
 
 	/**
