@@ -12,10 +12,6 @@ class EP_WP_Query_Integration {
 
 	private $posts_by_query = array();
 
-        private $memcached_host;
-
-        private $memcached_port;
-
 	/**
 	 * Placeholder method
 	 *
@@ -65,8 +61,6 @@ class EP_WP_Query_Integration {
                 // Store search results in the cache
                 add_action( 'ep_wp_query_search', array( $this, 'action_cache_query_results' ), 10, 3 );
 
-                $this->memcached_host = ep_get_memcached_host();
-                $this->memcached_port = ep_get_memcached_port();
 	}
 
 	/**
@@ -304,17 +298,11 @@ class EP_WP_Query_Integration {
 	}
 
         public function filter_check_query_cache( $posts, $query ) {
-          $cache = new \Memcache;
-          if( ! @$cache->connect( $this->memcached_host, $this->memcached_port ) ) {
-            error_log( 'Cannot connect to memcache @ ' . $this->memcached_host . ':' . $this->memcached_port );
-            return $posts;
-          }
-          
           $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
 
-          $results = $cache->get( $key );
+          $results = wp_cache_get( $key, __NAMESPACE__ );
           
-          if( $results ) {
+          if( ! empty( $results ) ) {
             if( is_array( $results ) ) {
               foreach( $results as $post ) {
                 $posts[] = $post;
@@ -329,19 +317,9 @@ class EP_WP_Query_Integration {
         }
 
         public function action_cache_query_results( $posts, $search, $query ) {
-          $cache = new \Memcache;
-          if( ! @$cache->connect( $this->memcached_host, $this->memcached_port ) ) {
-            error_log( 'Cannot connect to memcache @ ' . $this->memcached_host . ':' . $this->memcached_port );
-            return;
-          }
-
           $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
 
-          $is_query_cached = $cache->set( $key, $posts );
-
-          if( ! $is_query_cached ) {
-            error_log( 'Unable to cache results for WP_Query: ' . var_export( $query->query_vars, true ) );
-          }
+          wp_cache_set( $key, $posts, __NAMESPACE__ );
         }
 
 	/**

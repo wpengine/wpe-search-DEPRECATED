@@ -32,9 +32,6 @@ function ep4wpe_print_field_callback( $args ) {
   echo get_site_option( $field_id, $default );
 }
 
-function ep4wpe_memcached_server_section() {
-}
-
 /* Admin action callbacks */
 
 function ep4wpe_custom_admin_menu() {
@@ -64,7 +61,7 @@ function ep4wpe_settings_init() {
                      'ep4wpe_print_field_callback',
                      'ep4wpe_settings_page',
                      'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_host', 'default' => 'localhost' )
+                     array( 'id' => 'ep4wpe_host' )
                      );
 
   add_settings_field(
@@ -76,30 +73,6 @@ function ep4wpe_settings_init() {
                      array( 'id' => 'ep4wpe_port', 'default' => '9200' )
                      );
 
-  add_settings_section(
-                       'ep4wpe_memcached_server',
-                       'Memcached server',
-                       'ep4wpe_memcached_server_section',
-                       'ep4wpe_settings_page'
-                       );
-
-  add_settings_field(
-                     'ep4wpe_memcached_server_host',
-                     'memcached host (name or address)',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_memcached_server',
-                     array( 'id' => 'ep4wpe_memcached_host', 'default' => 'localhost' )
-                     );
-
-  add_settings_field(
-                     'ep4wpe_memcached_server_port',
-                     'memcached port number',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_memcached_server',
-                     array( 'id' => 'ep4wpe_memcached_port', 'default' => '11211' )
-                     );
 
 }
 
