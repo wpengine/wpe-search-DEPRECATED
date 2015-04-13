@@ -58,9 +58,9 @@ class EP_Related_Posts_Content {
         $rp = $related_posts['posts'][$i];
         $rp_date = mysql2date('F j, Y', $rp['post_date']);
         $rp_content .= <<<"RELATEDPOST"
-<li>
-  <a href="${rp['permalink']}" rel="bookmark" title="${rp['post_title']}">${rp['post_title']}</a>
-  <span class="post-date">${rp_date}</span>
+<li class="related-post-item">
+  <a href="${rp['permalink']}" rel="bookmark" title="${rp['post_title']}" class="related-post-link" >${rp['post_title']}</a>
+  <span class="related-post-date">${rp_date}</span>
 </li>
 RELATEDPOST;
       }
@@ -68,7 +68,7 @@ RELATEDPOST;
       $rp_content .= '</ul>';
     }
     else {
-      $rp_content .= '<span>' . __( 'No related posts found.', 'elasticpress' ) . '</span>';
+      $rp_content .= '<span class="no-related-posts">' . __( 'No related posts found.', 'elasticpress' ) . '</span>';
     }
 
     return $rp_content;
