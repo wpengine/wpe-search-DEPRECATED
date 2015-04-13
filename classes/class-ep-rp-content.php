@@ -46,7 +46,9 @@ class EP_Related_Posts_Content {
   private function get_related_posts_content() {
     $related_posts = ep_more_like_this( get_the_ID(), null );
 
-    $rp_content = ' <hr class="above-related-posts" />';
+    $rp_content = ' <hr class="above-related-posts" /><div class="related-posts-head">';
+    $rp_content .= __( 'Related Posts', 'elasticpress' );
+    $rp_content .= '</div>';
     if( $related_posts['found_posts'] > 0 ) {
       $rp_content .= '<ul class="ep4wpe-related-posts">';
 
