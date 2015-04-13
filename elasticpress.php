@@ -25,6 +25,7 @@ require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-sync-manager.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-elasticpress.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-wp-query-integration.php' );
 require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-widget.php' );
+require_once( EP4WPE__PLUGIN_DIR . 'classes/class-ep-rp-content.php' );
 
 require_once( EP4WPE__PLUGIN_DIR . 'admin/options.php' );
 
