@@ -103,7 +103,7 @@ class EP_Config {
 	 * @since 1.3.10-wpengine
 	 * @return nil
 	 */
-        public function set_show_related_hosts( $do_show = true ) {
+        public function set_show_related_posts( $do_show = true ) {
           update_site_option( constant( __NAMESPACE__ . '\SHOW_RELATED_POSTS_FIELD' ), $do_show );
         }
 
