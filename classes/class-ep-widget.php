@@ -1,9 +1,6 @@
 <?php
 namespace ep4wpe;
 
-define( __NAMESPACE__ . '\MAX_RELATED_POSTS', 10 );
-define( __NAMESPACE__ . '\POST_COUNT_FIELD', __NAMESPACE__ . '_count' );
-
 class ElasticPress_Related_Posts_Widget extends \WP_Widget {
 
   /**
@@ -90,7 +87,6 @@ class ElasticPress_Related_Posts_Widget extends \WP_Widget {
     $instance[namespace\POST_COUNT_FIELD] = ( ! empty( $new_instance[namespace\POST_COUNT_FIELD] ) ) ? preg_replace( '/[^\d]/', '', $new_instance[namespace\POST_COUNT_FIELD] ) : '';
     
     /* Limit max value */
-    echo namespace\MAX_RELATED_POSTS;
     if( $instance[namespace\POST_COUNT_FIELD] > namespace\MAX_RELATED_POSTS ) {
       $instance[namespace\POST_COUNT_FIELD] = namespace\MAX_RELATED_POSTS;
     }

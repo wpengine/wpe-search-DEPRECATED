@@ -1,85 +1,121 @@
 <?php
 
-/* Admin display callbacks */
+$s['settings_page_title'] = __('ElasticPress For WPEngine');
+$s['settings_menu_title'] = $s['settings_page_title'];
+$s['settings_menu_slug'] = 'ep4wpe-plugin';
+$s['settings_page_callback'] = 'ep4wpe_settings_page_callback';
 
-function ep4wpe_settings_page() {
-?>
-  <div class="wrap">
-    <h2>ElasticPress For WPEngine Settings</h2>
+$s['settings_group'] = 'ep4wpe-settings';
 
-    <p>ElasticPress is <?php echo ep4wpe\ep_is_activated() ? 'ACTIVE' : 'INACTIVE'; ?>.<p>
+$s['show_related_posts_setting_id'] = ep4wpe\SHOW_RELATED_POSTS_FIELD;
+$s['show_related_posts_setting_callback'] = 'ep4wpe_boolean_sanitize';
 
-    <?php settings_fields( 'ep4wpe_elasticsearch_server' ); ?>
-    <?php do_settings_sections( 'ep4wpe_settings_page' ); ?>
+$s['related_posts_count_setting_id'] = ep4wpe\POST_COUNT_FIELD;
+$s['related_posts_count_setting_callback'] = 'ep4wpe_posts_count_sanitize';
 
-  </div>
-<?php
-}
+$s['related_posts_section_id'] = 'ep4wpe-related-posts-section';
+$s['related_posts_section_title'] = __('Related Posts');
+$s['related_posts_section_callback'] = 'ep4wpe_related_posts_section_callback';
 
-function ep4wpe_elasticsearch_server_section() {
-  $stats_map = ep4wpe\ep_stats();
-  if( isset( $stats_map ) ) {
-?>
-    <?php printf( "<div>Search index contains %s documents, utilizing %s of disk space", $stats_map['total']['docs']['count'], size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) ); ?> 
+$s['related_posts_do_show_field_id'] = 'ep4wpe-related-posts-do-show';
+$s['related_posts_do_show_field_title'] = __('Show related posts below single posts');
+$s['related_posts_do_show_field_callback'] = 'ep4wpe_related_posts_do_show_field_callback';
 
-<?php
-                                                                                         }
-}
+$s['related_posts_count_field_id'] = 'ep4wpe-related-posts-count';
+$s['related_posts_count_field_title'] = __('Number of related posts to show');
+$s['related_posts_count_field_callback'] = 'ep4wpe_related_posts_count_field_callback';
 
-function ep4wpe_print_field_callback( $args ) {
-  $field_id = $args{'id'};
-  $default = isset( $args{'default'} ) ? $args{'default'} : '';
-  echo get_site_option( $field_id, $default );
-}
 
-/* Admin action callbacks */
-
+add_action( 'admin_menu', 'ep4wpe_custom_admin_menu' );
 function ep4wpe_custom_admin_menu() {
+  global $s;
   add_options_page(
-                   'ElasticPress For WPEngine',
-                   'ElasticPress For WPEngine',
+                   $s['settings_page_title'],
+                   $s['settings_menu_title'],
                    'manage_options',
-                   'ep4wpe-plugin',
-                   'ep4wpe_settings_page'
+                   $s['settings_menu_slug'],
+                   $s['settings_page_callback']
                    );
 }
 
+
+add_action( 'admin_init', 'ep4wpe_settings_init' );
 function ep4wpe_settings_init() {
+  global $s;
+  register_setting( $s['settings_group'], $s['show_related_posts_setting_id'], $s['show_related_posts_setting_callback'] );
+  register_setting( $s['settings_group'], $s['related_posts_count_setting_id'], $s['related_posts_count_setting_callback'] );
 
-  register_setting( 'ep4wpe_elasticsearch_server', 'ep4wpe_settings' );
+  add_settings_section( $s['related_posts_section_id'], $s['related_posts_section_title'], $s['related_posts_section_callback'], $s['settings_menu_slug'] );
 
-  add_settings_section(
-                       'ep4wpe_elasticsearch_server',
-                       'Elasticsearch server',
-                       'ep4wpe_elasticsearch_server_section',
-                       'ep4wpe_settings_page'
-                       );
+  add_settings_field( $s['related_posts_do_show_field_id'], $s['related_posts_do_show_field_title'], $s['related_posts_do_show_field_callback'],
+                      $s['settings_menu_slug'], $s['related_posts_section_id'], [ 'id' => $s['show_related_posts_setting_id'], 'default' => false ] ); 
 
-  add_settings_field(
-                     'ep4wpe_elasticsearch_server_host',
-                     'ES host (name or address)',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_host' )
-                     );
-
-  add_settings_field(
-                     'ep4wpe_elasticsearch_server_port',
-                     'ES port number',
-                     'ep4wpe_print_field_callback',
-                     'ep4wpe_settings_page',
-                     'ep4wpe_elasticsearch_server',
-                     array( 'id' => 'ep4wpe_port', 'default' => '9200' )
-                     );
-
+  add_settings_field( $s['related_posts_count_field_id'], $s['related_posts_count_field_title'], $s['related_posts_count_field_callback'],
+                      $s['settings_menu_slug'], $s['related_posts_section_id'], [ 'id' => $s['related_posts_count_setting_id'], 'default' => false ] ); 
 
 }
 
 
-/* Add actions, set callbacks */
 
-add_action( 'admin_menu', 'ep4wpe_custom_admin_menu' );
- 
-add_action( 'admin_init', 'ep4wpe_settings_init' );
+
+/* Admin display callbacks */
+
+function ep4wpe_settings_page_callback() {
+  global $s;
+
+  $state = ep4wpe\ep_is_activated() ? __('ACTIVE') : __('INACTIVE');
+  $title = __('ElasticPress For WPEngine Settings');
+  $statement = sprintf( __('ElasticPress is %s'), $state );
+
+  echo "<div class=\"wrap\"><h2>$title</h2><p>$statement</p>";
+
+  $stats_map = ep4wpe\ep_stats();
+  if( isset( $stats_map ) ) {
+    printf( "<div>Search index contains %s documents, utilizing %s of disk space", $stats_map['total']['docs']['count'], size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
+  }
+
+
+  echo "<form method=\"post\" action=\"options.php\">";
+
+  settings_fields( $s['settings_group'] );
+  do_settings_sections( $s['settings_menu_slug'] );
+  submit_button();
+
+  echo "</form></div>";
+
+}
+
+function ep4wpe_related_posts_section_callback() {
+}
+
+function ep4wpe_related_posts_do_show_field_callback( $args ) {
+  $name = $args['id'];
+  $checked = checked( 1, get_option( $name ), false );
+  echo <<<INPUT
+<input name="$name" id="$name" type="checkbox" value="1" class="code" $checked />
+INPUT;
+}
+
+function ep4wpe_related_posts_count_field_callback( $args ) {
+  global $s;
+  $value = ep4wpe_posts_count_sanitize( get_site_option( ep4wpe\POST_COUNT_FIELD ) );
+  echo <<<INPUT
+<input name="${s['related_posts_count_setting_id']}" id="${s['related_posts_count_setting_id']}" type="text" value="${value}" class="code"/>
+INPUT;
+}
+
+function ep4wpe_boolean_sanitize( $input ) {
+  return $input == true;
+}
+
+function ep4wpe_posts_count_sanitize( $input ) {
+  $sanitized = intval( $input );
+  if( $sanitized == 0 || $sanitized > ep4wpe\MAX_RELATED_POSTS ) {
+    $sanitized = ep4wpe\MAX_RELATED_POSTS;
+  }
+  return $sanitized;
+}
+
+
+
 
