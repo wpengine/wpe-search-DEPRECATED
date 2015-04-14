@@ -118,4 +118,3 @@ function ep4wpe_posts_count_sanitize( $input ) {
 
 
 
-
