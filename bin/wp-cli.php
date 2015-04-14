@@ -111,7 +111,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	public function put_mapping( $args, $assoc_args ) {
 		$this->_connect_check();
 
-		if ( ! empty( $assoc_args['network-wide'] ) ) {
+		if ( ! empty( $assoc_args['network-wide'] ) && is_multisite() ) {
 			$sites = ep_get_sites();
 
 			foreach ( $sites as $site ) {
@@ -162,7 +162,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	public function delete_index( $args, $assoc_args ) {
 		$this->_connect_check();
 
-		if ( ! empty( $assoc_args['network-wide'] ) ) {
+		if ( ! empty( $assoc_args['network-wide'] ) && is_multisite() ) {
 			$sites = ep_get_sites();
 
 			foreach ( $sites as $site ) {
@@ -243,7 +243,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	/**
 	 * Index all posts for a site or network wide
 	 *
-	 * @synopsis [--setup] [--network-wide] [--posts-per-page]
+	 * @synopsis [--setup] [--network-wide] [--posts-per-page] [--no-bulk]
 	 * @param array $args
 	 *
 	 * @since 0.1.2
@@ -273,7 +273,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 			$this->put_mapping( $args, $assoc_args );
 		}
 
-		if ( ! empty( $assoc_args['network-wide'] ) ) {
+		if ( ! empty( $assoc_args['network-wide'] ) && is_multisite() ) {
 
 			\WP_CLI::log( __( 'Indexing posts network-wide...', 'elasticpress' ) );
 
@@ -326,6 +326,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	 * Helper method for indexing posts
 	 *
 	 * @param bool $no_bulk disable bulk indexing
+	 * @param int $posts_per_page
 	 *
 	 * @since 0.9
 	 * @return array
@@ -341,7 +342,7 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 			$args = apply_filters( 'ep_index_posts_args', array(
 				'posts_per_page'      => $posts_per_page,
 				'post_type'           => ep_get_indexable_post_types(),
-				'post_status'         => 'publish',
+				'post_status'         => ep_get_indexable_post_status(),
 				'offset'              => $offset,
 				'ignore_sticky_posts' => true
 			) );
@@ -505,7 +506,10 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 		if ( ! empty( $this->failed_posts ) ) {
 			$email_text = __( "The following posts failed to index:\r\n\r\n", 'elasticpress' );
 			foreach ( $this->failed_posts as $failed ) {
-				$email_text .= "- {$failed}: " . get_post( $failed )->post_title . "\r\n";
+				$failed_post = get_post( $failed );
+				if ( $failed_post ) {
+					$email_text .= "- {$failed}: " . get_post( $failed )->post_title . "\r\n";
+				}
 			}
 			$send_mail = wp_mail( get_option( 'admin_email' ), wp_specialchars_decode( get_option( 'blogname' ) ) . __( ': ElasticPress Index Errors', 'elasticpress' ), $email_text );
 
@@ -522,7 +526,6 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	/**
 	 * Ping the Elasticsearch server and retrieve a status.
 	 *
-	 * @synopsis [--raw] [--index=<foo>]
 	 * @since 0.9.1
 	 */
 	public function status() {
@@ -549,18 +552,20 @@ class ElasticPress_CLI_Command extends \WP_CLI_Command {
 	public function stats() {
 		$this->_connect_check();
 
-                $stats_map = ep_stats();
-                $current_index = ep_get_index_name();
+                $sites = ( is_multisite() ) ? ep_get_sites() : array( 'blog_id' => get_current_blog_id() );
+                foreach ( $sites as $site ) {
+                  $stats_map = ep_stats( $site['blog_id'] );
+                  $current_index = ep_get_index_name( $site['blog_id'] );
 
-
-		if ( isset( $stats_map ) ) {
-			\WP_CLI::log( '====== Stats for: ' . $current_index . " ======" );
-			\WP_CLI::log( 'Documents:  ' . $stats_map['total']['docs']['count'] );
-			\WP_CLI::log( 'Index Size: ' . size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
-			\WP_CLI::log( '====== End Stats ======' );
-		} else {
-			\WP_CLI::warning( $current_index . ' is not currently indexed.' );
-		}
+                  if ( isset( $stats_map ) ) {
+                    \WP_CLI::log( '====== Stats for: ' . $current_index . " ======" );
+                    \WP_CLI::log( 'Documents:  ' . $stats_map['total']['docs']['count'] );
+                    \WP_CLI::log( 'Index Size: ' . size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
+                    \WP_CLI::log( '====== End Stats ======' );
+                  } else {
+                    \WP_CLI::warning( $current_index . ' is not currently indexed.' );
+                  }
+                }
 	}
 
 	/**
