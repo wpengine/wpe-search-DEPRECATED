@@ -95,7 +95,6 @@ class EP_API {
 		$index_url = ep_get_index_url( $index );
 
 		$url = $index_url . '/post/_search';
-
 		$request = wp_remote_request( $url, array( 'body' => json_encode( $args ), 'method' => 'POST' ) );
 
 		if ( ! is_wp_error( $request ) ) {
@@ -1242,7 +1241,7 @@ class EP_API {
 	public function stats( $blog_id = null ) {
 		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
 		if ( is_wp_error( $request ) ) {
-                  WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+                  return null;
 		}
 		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
 		$current_index = ep_get_index_name( $blog_id );

@@ -54,6 +54,13 @@ class EP_WP_Query_Integration {
 
 		// Properly switch to blog if necessary
 		add_action( 'the_post', array( $this, 'action_the_post' ), 10, 1 );
+
+                // Check the cache before performing an ES search
+                add_filter( 'ep_pre_wp_query_search', array( $this, 'filter_check_query_cache' ), 10, 2 );
+		
+                // Store search results in the cache
+                add_action( 'ep_wp_query_search', array( $this, 'action_cache_query_results' ), 10, 3 );
+
 	}
 
 	/**
@@ -227,61 +234,93 @@ class EP_WP_Query_Integration {
 			}
 		}
 
-		$scope = 'current';
-		if ( ! empty( $query_vars['sites'] ) ) {
-			$scope = $query_vars['sites'];
-		}
-
-		$formatted_args = ep_format_args( $query_vars );
-
-		$search = ep_search( $formatted_args, $scope );
-
-		if ( false === $search ) {
-			return $request;
-		}
-
-		$query->found_posts = $search['found_posts'];
-		$query->max_num_pages = ceil( $search['found_posts'] / $query->get( 'posts_per_page' ) );
-
 		$new_posts = array();
+                
+                $new_posts = apply_filters( 'ep_pre_wp_query_search', $new_posts, $query );
 
-		foreach ( $search['posts'] as $post_array ) {
-			$post = new \stdClass();
+                if( count( $new_posts ) < 1 ) {
 
-			$post->ID = $post_array['post_id'];
-			$post->site_id = get_current_blog_id();
+                  $scope = 'current';
+                  if ( ! empty( $query_vars['sites'] ) ) {
+                    $scope = $query_vars['sites'];
+                  }
+                  
+                  $formatted_args = ep_format_args( $query_vars );
+                  
+                  $search = ep_search( $formatted_args, $scope );
+                  
+                  if ( false === $search ) {
+                    return $request;
+                  }
+                  
+                  $query->found_posts = $search['found_posts'];
+                  $query->max_num_pages = ceil( $search['found_posts'] / $query->get( 'posts_per_page' ) );
+                  
+                  foreach ( $search['posts'] as $post_array ) {
+                    $post = new \stdClass();
+                    
+                    $post->ID = $post_array['post_id'];
+                    $post->site_id = get_current_blog_id();
+                    
+                    if ( ! empty( $post_array['site_id'] ) ) {
+                      $post->site_id = $post_array['site_id'];
+                    }
+                    
+                    $post->post_type = $post_array['post_type'];
+                    $post->post_name = $post_array['post_name'];
+                    $post->post_status = $post_array['post_status'];
+                    $post->post_title = $post_array['post_title'];
+                    $post->post_parent = $post_array['post_parent'];
+                    $post->post_content = $post_array['post_content'];
+                    $post->post_date = $post_array['post_date'];
+                    $post->post_date_gmt = $post_array['post_date_gmt'];
+                    $post->post_modified = $post_array['post_modified'];
+                    $post->post_modified_gmt = $post_array['post_modified_gmt'];
+                    $post->elasticsearch = true; // Super useful for debugging
+                    
+                    // Run through get_post() to add all expected properties (even if they're empty)
+                    $post = get_post( $post );
+                    
+                    if ( $post ) {
+                      $new_posts[] = $post;
+                    }
+                  }
 
-			if ( ! empty( $post_array['site_id'] ) ) {
-				$post->site_id = $post_array['site_id'];
-			}
+                  do_action( 'ep_wp_query_search', $new_posts, $search, $query );
+                }
+                
+                $this->posts_by_query[spl_object_hash( $query )] = $new_posts;
 
-			$post->post_type = $post_array['post_type'];
-			$post->post_name = $post_array['post_name'];
-			$post->post_status = $post_array['post_status'];
-			$post->post_title = $post_array['post_title'];
-			$post->post_parent = $post_array['post_parent'];
-			$post->post_content = $post_array['post_content'];
-			$post->post_date = $post_array['post_date'];
-			$post->post_date_gmt = $post_array['post_date_gmt'];
-			$post->post_modified = $post_array['post_modified'];
-			$post->post_modified_gmt = $post_array['post_modified_gmt'];
-			$post->elasticsearch = true; // Super useful for debugging
-
-			// Run through get_post() to add all expected properties (even if they're empty)
-			$post = get_post( $post );
-
-			if ( $post ) {
-				$new_posts[] = $post;
-			}
-		}
-		$this->posts_by_query[spl_object_hash( $query )] = $new_posts;
-
-		do_action( 'ep_wp_query_search', $new_posts, $search, $query );
 
 		global $wpdb;
 
 		return "SELECT * FROM $wpdb->posts WHERE 1=0";
 	}
+
+        public function filter_check_query_cache( $posts, $query ) {
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
+
+          $results = wp_cache_get( $key, __NAMESPACE__ );
+          
+          if( ! empty( $results ) ) {
+            if( is_array( $results ) ) {
+              foreach( $results as $post ) {
+                $posts[] = $post;
+              }
+            }
+            else {
+              $posts[] = $results;
+            }
+          }
+
+          return $posts;
+        }
+
+        public function action_cache_query_results( $posts, $search, $query ) {
+          $key = ep_get_index_name() . ' ' . var_export( $query->query_vars, true );
+
+          wp_cache_set( $key, $posts, __NAMESPACE__ );
+        }
 
 	/**
 	 * Return a singleton instance of the current class
