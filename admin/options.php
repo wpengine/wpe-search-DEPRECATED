@@ -69,19 +69,33 @@ function ep4wpe_settings_page_callback() {
 
   echo "<div class=\"wrap\"><h2>$title</h2><p>$statement</p>";
 
-  $stats_map = ep4wpe\ep_stats();
-  if( isset( $stats_map ) ) {
-    printf( "<div>Search index contains %s documents, utilizing %s of disk space", $stats_map['total']['docs']['count'], size_format( $stats_map['total']['store']['size_in_bytes'], 2 ) );
+  if( array_key_exists( 'ep_index', $_GET ) && 'true' === $_GET['ep_index'] ) {
+    ep4wpe\ep_index_all();
+    sleep( 1 );
   }
 
+  $stats_map = ep4wpe\ep_stats();
+  $index_button_label = 'Index site';
+  $content = '';
 
-  echo "<form method=\"post\" action=\"options.php\">";
+  if( isset( $stats_map ) ) {
+    $index_button_label = 'Re-index site';
+    $doc_count = $stats_map['total']['docs']['count'];
+    $docs_size = size_format( $stats_map['total']['store']['size_in_bytes'] , 2 );
+    $button_url = admin_url( 'options-general.php?page=ep4wpe-plugin&ep_index=true' );
+    $content .= "<div>Search index contains $doc_count documents, utilizing $docs_size of disk space</div>";
+  }
+  $content .= "<div><a href=\"$button_url\" class=\"button secondary-button\">$index_button_label</a></div>";
+
+  $content .= "<form method=\"post\" action=\"options.php\">";
+
+  echo $content;
 
   settings_fields( $s['settings_group'] );
   do_settings_sections( $s['settings_menu_slug'] );
   submit_button();
 
-  echo "</form></div>";
+  echo  "</form></div>";
 
 }
 
