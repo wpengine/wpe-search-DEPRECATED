@@ -6,6 +6,20 @@ define( __NAMESPACE__ . '\is_active_option', __NAMESPACE__ . '_is_active' );
 class EP_API {
 
 	/**
+	 * Holds the posts that will be bulk synced.
+	 *
+	 * @since 0.9
+	 */
+	private $posts = array();
+
+	/**
+	 * Holds all of the posts that failed to index during a bulk index.
+	 *
+	 * @since 0.9
+	 */
+	private $failed_posts = array();
+
+	/**
 	 * Placeholder method
 	 *
 	 * @since 0.1.0
@@ -95,7 +109,6 @@ class EP_API {
 		$index_url = ep_get_index_url( $index );
 
 		$url = $index_url . '/post/_search';
-
 		$request = wp_remote_request( $url, array( 'body' => json_encode( $args ), 'method' => 'POST' ) );
 
 		if ( ! is_wp_error( $request ) ) {
@@ -1242,7 +1255,7 @@ class EP_API {
 	public function stats( $blog_id = null ) {
 		$request = wp_remote_get( trailingslashit( ep_get_server_url() ) . '_stats/' );
 		if ( is_wp_error( $request ) ) {
-                  WP_CLI::error( implode( "\n", $request->get_error_messages() ) );
+                  return null;
 		}
 		$body          = json_decode( wp_remote_retrieve_body( $request ), true );
 		$current_index = ep_get_index_name( $blog_id );
@@ -1325,7 +1338,230 @@ class EP_API {
 		return array( 'found_posts' => 0, 'posts' => array() );
 	}
 
+	/**
+	 * Helper method for indexing posts
+	 *
+	 * @param bool $no_bulk disable bulk indexing
+	 * @param int $posts_per_page
+	 *
+	 * @since 0.9
+	 * @return array
+	 */
+	private function _index_helper( $no_bulk = false, $posts_per_page = 350 ) {
+		global $wpdb, $wp_object_cache;
+		$synced = 0;
+		$errors = array();
+		$offset = 0;
 
+		while ( true ) {
+
+			$args = apply_filters( 'ep_index_posts_args', array(
+				'posts_per_page'      => $posts_per_page,
+				'post_type'           => ep_get_indexable_post_types(),
+				'post_status'         => ep_get_indexable_post_status(),
+				'offset'              => $offset,
+				'ignore_sticky_posts' => true
+			) );
+
+			$query = new \WP_Query( $args );
+
+			if ( $query->have_posts() ) {
+
+				while ( $query->have_posts() ) {
+					$query->the_post();
+
+					if ( $no_bulk ) {
+						// index the posts one-by-one. not sure why someone may want to do this.
+						$result = ep_sync_post( get_the_ID() );
+					} else {
+						$result = $this->queue_post( get_the_ID(), $query->post_count );
+					}
+
+					if ( ! $result ) {
+						$errors[] = get_the_ID();
+					} else {
+						$synced ++;
+					}
+				}
+			} else {
+				break;
+			}
+
+			$offset += $posts_per_page;
+
+			usleep( 500 );
+			
+			// Avoid running out of memory
+			$wpdb->queries = array();
+	
+			if ( is_object( $wp_object_cache ) ) {
+				$wp_object_cache->group_ops = array();
+				$wp_object_cache->stats = array();
+				$wp_object_cache->memcache_debug = array();
+				$wp_object_cache->cache = array();
+		
+				if ( is_callable( $wp_object_cache, '__remoteset' ) ) {
+					call_user_func( array( $wp_object_cache, '__remoteset' ) ); // important
+				}
+			}
+		}
+
+		if ( ! $no_bulk ) {
+			$this->send_bulk_errors();
+		}
+
+		wp_reset_postdata();
+
+		return array( 'synced' => $synced, 'errors' => $errors );
+	}
+
+	/**
+         * 
+	 *
+	 * @since 1.3.1
+	 * @return bool
+	 */
+	public function index_all() {
+          $this->deactivate();
+
+          if( ! $this->delete_index() ) {
+            return false;
+          }
+
+          if( ! $this->put_mapping() ) {
+            return false;
+          }
+
+          $results = $this->_index_helper();
+
+          if( $results['errors'] ) {
+            error_log( $results['errors'] );
+            return false;
+          }
+
+          $this->activate();
+
+          return true;
+	}
+
+	/**
+	 * Queues up a post for bulk indexing
+	 *
+	 * @since 0.9.2
+	 *
+	 * @param $post_id
+	 * @param $bulk_trigger
+	 *
+	 * @return bool
+	 */
+	private function queue_post( $post_id, $bulk_trigger ) {
+		static $post_count = 0;
+
+		// put the post into the queue
+		$this->posts[$post_id][] = '{ "index": { "_id": "' . absint( $post_id ) . '" } }';
+		$this->posts[$post_id][] = addcslashes( json_encode( ep_prepare_post( $post_id ) ), "\n" );
+
+		// augment the counter
+		++$post_count;
+
+		// if we have hit the trigger, initiate the bulk request
+		if ( $post_count === absint( $bulk_trigger ) ) {
+			$this->bulk_index();
+
+			// reset the post count
+			$post_count = 0;
+
+			// reset the posts
+			$this->posts = array();
+		}
+
+		return true;
+	}
+
+	/**
+	 * Perform the bulk index operation
+	 *
+	 * @since 0.9.2
+	 */
+	private function bulk_index() {
+		// monitor how many times we attempt to add this particular bulk request
+		static $attempts = 0;
+
+		// augment the attempts
+		++$attempts;
+
+		// make sure we actually have something to index
+		if ( empty( $this->posts ) ) {
+			\WP_CLI::error( 'There are no posts to index.' );
+		}
+
+		$flatten = array();
+
+		foreach ( $this->posts as $post ) {
+			$flatten[] = $post[0];
+			$flatten[] = $post[1];
+		}
+
+		// make sure to add a new line at the end or the request will fail
+		$body = rtrim( implode( "\n", $flatten ) ) . "\n";
+
+		// decode the response
+		$response = $this->bulk_index_posts( $body );
+
+		if ( is_wp_error( $response ) ) {
+                  // Do nothing, currently.
+		}
+
+		// if we did have errors, try to add the documents again
+		if ( isset( $response['errors'] ) && $response['errors'] === true ) {
+			if ( $attempts < 5 ) {
+				foreach ( $response['items'] as $item ) {
+					if ( empty( $item['index']['error'] ) ) {
+						unset( $this->posts[$item['index']['_id']] );
+					}
+				}
+				$this->bulk_index();
+			} else {
+				foreach ( $response['items'] as $item ) {
+					if ( ! empty( $item['index']['_id'] ) ) {
+						$this->failed_posts[] = $item['index']['_id'];
+					}
+				}
+				$attempts = 0;
+			}
+		} else {
+			// there were no errors, all the posts were added
+			$attempts = 0;
+		}
+	}
+
+	/**
+	 * Send any bulk indexing errors
+	 *
+	 * @since 0.9.2
+	 */
+	private function send_bulk_errors() {
+		if ( ! empty( $this->failed_posts ) ) {
+			$email_text = __( "The following posts failed to index:\r\n\r\n", 'elasticpress' );
+			foreach ( $this->failed_posts as $failed ) {
+				$failed_post = get_post( $failed );
+				if ( $failed_post ) {
+					$email_text .= "- {$failed}: " . get_post( $failed )->post_title . "\r\n";
+				}
+			}
+			$send_mail = wp_mail( get_option( 'admin_email' ), wp_specialchars_decode( get_option( 'blogname' ) ) . __( ': ElasticPress Index Errors', 'elasticpress' ), $email_text );
+
+			if ( ! $send_mail ) {
+				fwrite( STDOUT, __( 'Failed to send bulk error email. Print on screen? [y/n] ' ) );
+				$answer = trim( fgets( STDIN ) );
+				if ( 'y' == $answer ) {
+					\WP_CLI::log( $email_text );
+				}
+			}
+		}
+	}
+
+        
 
 }
 
@@ -1415,3 +1651,6 @@ function ep_more_like_this( $post_id, $scope ) {
   return EP_API::factory()->more_like_this( $post_id, $scope );
 }
 
+function ep_index_all() {
+  return EP_API::factory()->index_all();
+}
