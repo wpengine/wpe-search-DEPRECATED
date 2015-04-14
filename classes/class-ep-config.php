@@ -1,8 +1,12 @@
 <?php
 namespace ep4wpe;
 
-define( __NAMESPACE__ . '\host', __NAMESPACE__ . '_host' );
-define( __NAMESPACE__ . '\port', __NAMESPACE__ . '_port' );
+define( __NAMESPACE__ . '\HOST', __NAMESPACE__ . '_host' );
+define( __NAMESPACE__ . '\PORT', __NAMESPACE__ . '_port' );
+define( __NAMESPACE__ . '\MAX_RELATED_POSTS', 10 );
+define( __NAMESPACE__ . '\POST_COUNT_FIELD', __NAMESPACE__ . '_rp_count' );
+define( __NAMESPACE__ . '\SHOW_RELATED_POSTS_FIELD', __NAMESPACE__ . '_show_rp' );
+
 
 class EP_Config {
 
@@ -43,7 +47,7 @@ class EP_Config {
 	 * @return string Host name or IP address
 	 */
         public function get_server_host() {
-          return get_site_option( constant( __NAMESPACE__ . '\host' ), null );
+          return get_site_option( constant( __NAMESPACE__ . '\HOST' ), null );
         }
 
 	/**
@@ -55,7 +59,7 @@ class EP_Config {
 	 */
         public function set_server_host( $host = null ) {
           if( isset( $host ) ) {
-            update_site_option( constant( __NAMESPACE__ . '\host' ), $host );
+            update_site_option( constant( __NAMESPACE__ . '\HOST' ), $host );
           }
         }
 
@@ -66,7 +70,7 @@ class EP_Config {
 	 * @return integer A port number (1-65535)
 	 */
         public function get_server_port() {
-          return get_site_option( constant( __NAMESPACE__ . '\port' ), 9200 );
+          return get_site_option( constant( __NAMESPACE__ . '\PORT' ), 9200 );
         }
 
 	/**
@@ -78,8 +82,29 @@ class EP_Config {
 	 */
         public function set_server_port( $port = null ) {
           if( isset( $port ) && preg_match( '^\d{1,5}$', $port ) && $port < 65536 ) {
-            update_site_option( constant( __NAMESPACE__ . '\port' ), $port );
+            update_site_option( constant( __NAMESPACE__ . '\PORT' ), $port );
           }
+        }
+
+	/**
+	 * Gets the boolean value used to determine whether to show related posts below single posts.
+	 *
+	 * @since 1.3.1-wpengine
+	 * @return bool
+	 */
+        public function get_show_related_posts() {
+          return get_site_option( constant( __NAMESPACE__ . '\SHOW_RELATED_POSTS_FIELD' ), false );
+        }
+
+	/**
+	 * Sets the boolean value used to determine whether to show related posts below single posts.
+	 *
+	 * @param bool $host (optional) Port number.  If null, do nothing.
+	 * @since 1.3.10-wpengine
+	 * @return nil
+	 */
+        public function set_show_related_posts( $do_show = true ) {
+          update_site_option( constant( __NAMESPACE__ . '\SHOW_RELATED_POSTS_FIELD' ), $do_show );
         }
 
 	/**
@@ -97,8 +122,7 @@ class EP_Config {
 		$site_url = get_site_url( $blog_id );
 
 		if ( ! empty( $site_url ) ) {
-			$index_name = preg_replace( '#https?://(www\.)?#i', '', $site_url );
-			$index_name = preg_replace( '#[^\w]#', '', $index_name ) . '-' . $blog_id;
+			$index_name = sha1( $site_url ) . '-' . $blog_id;
 		} else {
 			$index_name = false;
 		}

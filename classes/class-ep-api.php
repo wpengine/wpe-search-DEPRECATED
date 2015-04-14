@@ -1087,7 +1087,7 @@ class EP_API {
 	public function bulk_index_posts( $body ) {
 		// create the url with index name and type so that we don't have to repeat it over and over in the request (thereby reducing the request size)
 		$url     = trailingslashit( ep_get_server_url() ) . trailingslashit( ep_get_index_name() ) . 'post/_bulk';
-		$request = wp_remote_request( $url, array( 'method' => 'POST', 'body' => $body ) );
+		$request = wp_remote_request( $url, array( 'method' => 'POST', 'body' => $body, 'timeout' => 60 ) );
 
 		return is_wp_error( $request ) ? $request : json_decode( wp_remote_retrieve_body( $request ), true );
 	}
@@ -1162,6 +1162,7 @@ class EP_API {
 	 * @access protected
 	 *
 	 * @param string $orderby Alias for the field to order by.
+	 * @param string $order
 	 * @return array|bool Array formatted value to used in the sort DSL. False otherwise.
 	 */
 	protected function parse_orderby( $orderby, $order ) {
@@ -1170,6 +1171,7 @@ class EP_API {
 			'relevance',
 			'name',
 			'title',
+			'date',
 		);
 
 		if ( ! in_array( $orderby, $allowed_keys ) ) {
@@ -1178,10 +1180,19 @@ class EP_API {
 
 		switch ( $orderby ) {
 			case 'relevance':
-			default:
 				$sort = array(
 					array(
 						'_score' => array(
+							'order' => $order,
+						),
+					),
+				);
+				break;
+			case 'date':
+			default:
+				$sort = array(
+					array(
+						'post_date' => array(
 							'order' => $order,
 						),
 					),
