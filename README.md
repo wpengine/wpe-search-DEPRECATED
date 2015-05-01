@@ -1,7 +1,7 @@
-ElasticPress For WPEngine
-=========================
+WP Engine Search
+================
 
-Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/) running hosted on [WPEngine](http://wpengine.com/).
+Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/) running hosted on [WP Engine](http://wpengine.com/).
 
 ## Background
 
@@ -23,14 +23,14 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 ## Purpose
 
-The goal of ElasticPress is to integrate WordPress with Elasticsearch. This plugin integrates with the [WP_Query](http://codex.wordpress.org/Class_Reference/WP_Query) object returning results from Elasticsearch instead of MySQL.
+The goal of WP Engine Search is to integrate WordPress with Elasticsearch. This plugin integrates with the [WP_Query](http://codex.wordpress.org/Class_Reference/WP_Query) object returning results from Elasticsearch instead of MySQL.
 
-There are other Elasticsearch integration plugins available for WordPress. ElasticPress, unlike others, offers multi-site search. Elasticsearch is a complex topic and integration results in complex problems. Rather than providing a limited, clunky UI, we elected to instead provide full control via [WP-CLI](http://wp-cli.org/).
+There are other Elasticsearch integration plugins available for WordPress. WP Engine Search, unlike most others, offers multi-site search. Elasticsearch is a complex topic and integration results in complex problems. Rather than providing a limited, clunky UI, we elected to instead provide full control via [WP-CLI](http://wp-cli.org/).
 
 ## Installation
 
 1. First, you will need to properly [install and configure](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_installing_elasticsearch.html) Elasticsearch.
-2. ElasticPress requires WP-CLI. Install it by following [these instructions](http://wp-cli.org).
+2. WP Engine Search requires WP-CLI. Install it by following [these instructions](http://wp-cli.org).
 3. Install the plugin in WordPress. You can download a [zip via Github](https://github.com/dhapdigitalinc/ElasticPressForWPEngine/archive/master.zip) and upload it using the WP plugin uploader.
 
 ## Configuration
@@ -73,7 +73,7 @@ Index names are automatically generated based on site URL.  Once your index or i
 
 ## Usage
 
-After running an index, ElasticPress integrates with `WP_Query` if and only if the query is a search or the `ep_integrate` parameter is passed (see below). The end goal is to support all the parameters available to `WP_Query` so the transition is completely transparent. Right now, our `WP_Query` integration supports *many* of the relevant `WP_Query` parameters and adds a couple special ones.
+After running an index, WP Engine Search integrates with `WP_Query` if and only if the query is a search or the `ep_integrate` parameter is passed (see below). The end goal is to support all the parameters available to `WP_Query` so the transition is completely transparent. Right now, our `WP_Query` integration supports *many* of the relevant `WP_Query` parameters and adds a couple special ones.
 
 ### Supported `WP_Query` Parameters
 
@@ -151,7 +151,7 @@ After running an index, ElasticPress integrates with `WP_Query` if and only if t
 
 * ```post_type``` (*string*/*array*)
 
-    Filter posts by post type. ```any``` wil search all public post types. `WP_Query` defaults to either `post` or `any` if no `post_type` is provided depending on the context of the query. This is confusing. ElasticPress will ALWAYS default to `any` if no `post_type` is provided. If you want to search for `post` posts, you MUST specify `post` as the `post_type`.
+    Filter posts by post type. ```any``` wil search all public post types. `WP_Query` defaults to either `post` or `any` if no `post_type` is provided depending on the context of the query. This is confusing. WP Engine Search will ALWAYS default to `any` if no `post_type` is provided. If you want to search for `post` posts, you MUST specify `post` as the `post_type`.
 
 * ```offset``` (*int*)
 
@@ -177,7 +177,7 @@ After running an index, ElasticPress integrates with `WP_Query` if and only if t
 
     Which direction to order results in. Accepts ```ASC``` and ```DESC```. Default is ```DESC```.
 
-The following are special parameters that are only supported by ElasticPress.
+The following are special parameters that are only supported by WP Engine Search.
 
 * ```search_fields``` (*array*)
 
@@ -329,7 +329,7 @@ The following are special parameters that are only supported by ElasticPress.
 
 ## Related Posts Widget
 
-The plugin makes available a widget called **ElasticPress Related Posts**, with one configurable option: the number of posts to display in the widget, up to a maximum of 10.
+The plugin makes available a widget called **WP Engine Related Posts**, with one configurable option: the number of posts to display in the widget, up to a maximum of 10.
 
 Content is only generated if the widget is on a single post page, and uses the post ID to call Elasticsearch using its "[more like this API](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-more-like-this.html)".
 
@@ -346,7 +346,7 @@ The widget generates relatively generic HTML that may be styled to match any the
 
 ### Supported WP-CLI Commands
 
-The following commands are supported by ElasticPress:
+The following commands are supported by WP Engine Search:
 
 * `wp ep4wpe index [--setup] [--network-wide] [--posts-per-page] [--no-bulk]`
 
@@ -354,11 +354,11 @@ The following commands are supported by ElasticPress:
 
 * `wp ep4wpe activate`
 
-  Turns on ElasticPress integration. Integration is automatically deactivated during indexing.
+  Turns on WP Engine Search integration. Integration is automatically deactivated during indexing.
 
 * `wp ep4wpe deactivate`
 
-  Turns off ElasticPress integration. Integration is automatically deactivated during indexing.
+  Turns off WP Engine Search integration. Integration is automatically deactivated during indexing.
 
 * `wp ep4wpe delete-index [--network-wide]`
 
@@ -366,7 +366,7 @@ The following commands are supported by ElasticPress:
 
 * `wp ep4wpe is-active`
 
-  Checks whether ElasticPress is currently integration active. This is different than whether the plugin is WordPress active or not. During indexing, integration will be deactivated automatically.
+  Checks whether WP Engine Search is currently integration active. This is different than whether the plugin is WordPress active or not. During indexing, integration will be deactivated automatically.
 
 * `wp ep4wpe put-mapping [--network-wide]`
 
@@ -421,7 +421,7 @@ EP_HOST="http://192.168.50.4:9200" phpunit
 
 #### Dockunit
 
-ElasticPress contains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). It assumes the address of your Elasticsearch server is `http://192.168.50.4:9200`. You can use Dockunit by running:
+WP Engine Searchcontains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). It assumes the address of your Elasticsearch server is `http://192.168.50.4:9200`. You can use Dockunit by running:
 
 ```bash
 dockunit
@@ -434,4 +434,4 @@ If you identify any errors or have an idea for improving the plugin, please [ope
 
 ## License
 
-ElasticPress is free software; you can redistribute it and/or modify it under the terms of the [GNU General Public License](http://www.gnu.org/licenses/gpl-2.0.html) as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+WP Engine Searchis free software; you can redistribute it and/or modify it under the terms of the [GNU General Public License](http://www.gnu.org/licenses/gpl-2.0.html) as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.

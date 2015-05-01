@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Plugin Name: ElasticPress For WP Engine
- * Description: Integrate WPEngine WordPress search with Elasticsearch
- * Version:     1.3.1-wpengine
+ * Plugin Name: WP Engine Search
+ * Description: Makes WordPress search more elastic!
+ * Version:     1.5.0
  * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up, Christopher Goldman, DHAP Digital, Inc.
- * Author URI:  http://10up.com http://dhapdigital.com
+ * Author URI:  http://wpengine.com/
  * License:     GPLv2 or later
  *
- * It is a fork of https://github.com/10up/ElasticPress
+ * This is a fork of https://github.com/10up/ElasticPress
  *
  * This program derives work from Alley Interactive's SearchPress
  * and Automattic's VIP search plugin:
