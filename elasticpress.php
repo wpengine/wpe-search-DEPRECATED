@@ -6,6 +6,7 @@
  * Version:     1.5.0
  * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up, Christopher Goldman, DHAP Digital, Inc.
  * Author URI:  http://wpengine.com/
+ * Text Domain: wpengine-search
  * License:     GPLv2 or later
  *
  * This is a fork of https://github.com/10up/ElasticPress
