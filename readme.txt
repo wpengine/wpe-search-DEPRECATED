@@ -1,20 +1,20 @@
-=== ElasticPressForWPEngine ===
+=== WP Engine Search ===
 Contributors: cgoldman@dhapdigital.com, WPEngine
 Author URI: http://dhapdigital.com
-Plugin URI: https://github.com/dhapdigitalinc/ElasticPressForWPEngine
+Plugin URI: https://github.com/wpengine/ElasticPress-WPE/
 Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search, wpengine
 Requires at least: 3.7.1
-Tested up to: 4.2
-Stable tag: 1.3.1
+Tested up to: 4.2.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Integrate Elasticsearch with WordPress, running hosted on WPEngine
+Integrate Elasticsearch with WordPress for users of the WP Engine platform.
 
 == Description ==
-ElasticPress is a WordPress-Elasticsearch integration that overrides default `WP_Query` behavior to give you search results from Elasticsearch instead of MySQL. The plugin is built to be managed entirely via the command line. ElasticPress supports cross-site search in multi-site WordPress installs.
+WP Engine Search is a WordPress & Elasticsearch integration that overrides default `WP_Query` behavior to give you search results from an Elasticsearch instance rather than MySQL. While there is a basic settings page, the plugin is built to be managed entirely via the command line.
 
-Out of the box, WordPress search is rudimentary at best: Poor performance, inflexible and rigid matching algorithms, inability to search metadata and taxonomy information, no way to determine categories of your results, and most importantly overall poor result relevancy.
+Let's face it, WordPress search is rudimentary at best. Lackluster performance, inflexible and rigid matching algorithms (which means no comprehension of 'close' queries), the inability to search metadata and taxonomy information, no way to determine categories of your results and most importantly the overall relevancy of results is poor.
 
 Elasticsearch is a search server based on [Lucene](http://lucene.apache.org/). It provides a distributed, multitenant-capable full-text search engine with a [REST](http://en.wikipedia.org/wiki/Representational_state_transfer)ful web interface and schema-free [JSON](http://json.org/) documents.
 
@@ -32,26 +32,31 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 _Note:_ Requires [WP-CLI](http://wp-cli.org/) and [Elasticsearch](http://www.elasticsearch.org/).
 
-Please refer to [Github](https://github.com/dhapdigitalinc/ElasticPressForWPEngine) for detailed usage instructions and documentation.
+Please refer to [GitHub](https://github.com/wpengine/ElasticPress-WPE/) for detailed usage instructions and documentation.
 
 == Installation ==
-1. First, you will need to properly [install and configure](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_installing_elasticsearch.html) Elasticsearch.
-2. Install [WP-CLI](http://wp-cli.org/).
-3. Install the plugin in WordPress.
+1. Download the [current development release](https://github.com/wpengine/ElasticPress-WPE/archive/master.zip) and install it using the WordPress plugin uploader GUI.
+2. Activate the plugin.
 
 = Configuration =
 
-First, make sure you have Elasticsearch configured properly and WP-CLI setup.
+_Important!_ Members of the WP Engine Search alpha *do not* need to follow these steps! The plugin will be configured for you by our Labs team. However, if you have an Elasticsearch instance you would like to use, feel free to follow the steps below.
 
-Before configuring the WordPress plugin, you need to decide how you want to run the plugin. The processes for
-configuring single site and multi-site cross-site search are slightly different.
+1. Activate the plugin with `wp-cli`. Remember to use the `--network` flag for Multisite installs: `wp plugin activate WPE-Search [--network]`
 
-= Single Site =
-1. Activate the plugin with WP-CLI. Remember to use the "--network" flag for multi-site installs: `wp plugin activate ElasticPressForWPEngine [--network]`
-2. Configure the host of your Elasticsearch server: `wp ep4wpe set-host 192.168.50.4`
-3. Do an initial sync (with mapping) with your ES server by running: `wp elasticpress index --setup [--network-wide]`.  Again, use the optional flag for multi-site installs.
+2. Using `wp-cli`, configure the host of your Elasticsearch server: `wp ep4wpe set-host 192.168.50.4`
+
+3. _(Optional)_ If your instance of Elasticsearch is running on a different port, use `wp-cli` to set the port number: `wp ep4wpe set-port 9200`
+
+_Note:_ Port 9200 is used by default if not manually configured.
 
 == Changelog ==
+
+= 1.5.0 =
+* Forked plugin from [ElasticPress](https://github.com/10up/ElasticPress).
+* Add option to display related posts below single posts.
+* Add UI to kick-off content reindexing.
+* Add code to leverage WP Engine EverCache to cache search results.
 
 = 1.3.1 =
 * Support `date` in WP_Query `orderby`.

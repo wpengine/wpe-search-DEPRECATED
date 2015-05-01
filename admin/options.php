@@ -1,6 +1,6 @@
 <?php
 
-$s['settings_page_title'] = __('ElasticPress For WPEngine');
+$s['settings_page_title'] = __('WP Engine Search');
 $s['settings_menu_title'] = $s['settings_page_title'];
 $s['settings_menu_slug'] = 'ep4wpe-plugin';
 $s['settings_page_callback'] = 'ep4wpe_settings_page_callback';
@@ -64,7 +64,7 @@ function ep4wpe_settings_page_callback() {
   global $s;
 
   $state = ep4wpe\ep_is_activated() ? __('ACTIVE') : __('INACTIVE');
-  $title = __('ElasticPress For WPEngine Settings');
+  $title = __('WP Engine Search Settings');
   $statement = sprintf( __('ElasticPress is %s'), $state );
 
   echo "<div class=\"wrap\"><h2>$title</h2><p>$statement</p>";
@@ -85,7 +85,7 @@ function ep4wpe_settings_page_callback() {
     $button_url = admin_url( 'options-general.php?page=ep4wpe-plugin&ep_index=true' );
     $content .= "<div>Search index contains $doc_count documents, utilizing $docs_size of disk space</div>";
   }
-  $content .= "<div><a href=\"$button_url\" class=\"button secondary-button\">$index_button_label</a></div>";
+  $content .= "<div><a href=\"$button_url\" class=\"button secondary-button btn\">$index_button_label</a></div>";
 
   $content .= "<form method=\"post\" action=\"options.php\">";
 

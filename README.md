@@ -1,11 +1,10 @@
-WP Engine Search
-================
+# WP Engine Search
 
-Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/) running hosted on [WP Engine](http://wpengine.com/).
+Integrate [Elasticsearch](http://www.elasticsearch.org/) with [WordPress](http://wordpress.org/) for users of the [WP Engine](http://wpengine.com/) platform.
 
 ## Background
 
-Let's face it, WordPress search is rudimentary at best. Poor performance, inflexible and rigid matching algorithms (which means no comprehension of 'close' queries), the inability to search metadata and taxonomy information, no way to determine categories of your results and most importantly the overall relevancy of results is poor.
+Let's face it, WordPress search is rudimentary at best. Lackluster performance, inflexible and rigid matching algorithms (which means no comprehension of 'close' queries), the inability to search metadata and taxonomy information, no way to determine categories of your results and most importantly the overall relevancy of results is poor.
 
 Elasticsearch is a search server based on [Lucene](http://lucene.apache.org/). It provides a distributed, multitenant-capable full-text search engine with a [REST](http://en.wikipedia.org/wiki/Representational_state_transfer)ful web interface and schema-free [JSON](http://json.org/) documents.
 
@@ -23,69 +22,67 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 ## Purpose
 
-The goal of WP Engine Search is to integrate WordPress with Elasticsearch. This plugin integrates with the [WP_Query](http://codex.wordpress.org/Class_Reference/WP_Query) object returning results from Elasticsearch instead of MySQL.
+Elasticsearch is a complex topic and integration results in complex problems. The goal of WP Engine Search is to fully marry WordPress with Elasticsearch. This plugin integrates with the [WP_Query](http://codex.wordpress.org/Class_Reference/WP_Query) object returning results from Elasticsearch instead of MySQL.
 
-There are other Elasticsearch integration plugins available for WordPress. WP Engine Search, unlike most others, offers multi-site search. Elasticsearch is a complex topic and integration results in complex problems. Rather than providing a limited, clunky UI, we elected to instead provide full control via [WP-CLI](http://wp-cli.org/).
+There are other Elasticsearch integration plugins available for WordPress. WP Engine Search, unlike most others, offers multi-site search out of the box. Also, rather than providing a limited, clunky UI, we elected to instead provide full control via [WP-CLI](http://wp-cli.org/).
 
 ## Installation
 
-1. First, you will need to properly [install and configure](http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/_installing_elasticsearch.html) Elasticsearch.
-2. WP Engine Search requires WP-CLI. Install it by following [these instructions](http://wp-cli.org).
-3. Install the plugin in WordPress. You can download a [zip via Github](https://github.com/dhapdigitalinc/ElasticPressForWPEngine/archive/master.zip) and upload it using the WP plugin uploader.
+1. Download the [current development release](https://github.com/wpengine/ElasticPress-WPE/archive/master.zip) and install it using the WordPress plugin uploader GUI.
 
 ## Configuration
 
-First, make sure you have Elasticsearch and WP-CLI configured properly.
+**Important!** Members of the WP Engine Search alpha *do not* need to follow these steps! The plugin will be configured for you by our Labs team. However, if you have an Elasticsearch instance you would like to use, feel free to follow the steps below.
 
-You should be able to view the Elasticsearch server status in your browser before continuing.  Assuming the values below, the URL would be [http://192.168.50.4:9200/_status?pretty=true](http://192.168.50.4:9200/_status?pretty=true).
+1. Activate the plugin with `wp-cli`. Remember to use the `--network` flag for Multisite installs!
 
-1. Activate the plugin with wp-cli.  Remember to use the ```--network``` flag for multi-site installs.
-
-```php
-wp plugin activate ElasticPressForWPEngine [--network]
+```
+wp plugin activate WPE-Search [--network]
 ```
 
-2. Using wp-cli, configure the host of your Elasticsearch server. For example:
+2. Using `wp-cli`, configure the host of your Elasticsearch server.
 
-```php
+```
 wp ep4wpe set-host 192.168.50.4
 ```
 
-3. _(Optional)_ Using wp-cli, configure the port of your Elasticsearch server. For example:
+3. **(Optional)** If your instance of Elasticsearch is running on a different port, use `wp-cli` to set the port number:
 
-```php
+```
 wp ep4wpe set-port 9200
 ```
 
-Port 9200 is used by default if not manually configured.
+**Note:** Port 9200 is used by default if not manually configured.
 
 ## Index Initialization
 
+1. Using `wp-cli`, do an initial sync (with mapping) with your Elasticsearch server.
 
-1. Using wp-cli, do an initial sync (with mapping) with your ES server by running the following commands.  Remember to use the ```--network-wide``` flag for multi-site installs.
-
-```bash
+```
 wp ep4wpe index --setup [--network-wide]
 ```
 
-Index names are automatically generated based on site URL.  Once your index or indices are initialized, ```WP_Query``` will be integrated with Elasticsearch and support a few special parameters.
+**Note:**  Use the `--network-wide` flag only if the install has Multisite configured.
 
+Index names are automatically generated based on site URL. Once your index (or, in the case of Multisite, indices) has been initialized, `WP_Query` will be integrated with Elasticsearch and support a few special parameters.
 
 ## Usage
 
-After running an index, WP Engine Search integrates with `WP_Query` if and only if the query is a search or the `ep_integrate` parameter is passed (see below). The end goal is to support all the parameters available to `WP_Query` so the transition is completely transparent. Right now, our `WP_Query` integration supports *many* of the relevant `WP_Query` parameters and adds a couple special ones.
+After running an index, WP Engine Search integrates with `WP_Query` *if and only if* the query is a search or the `ep_integrate` parameter is passed (see below).
+
+The end goal is to support all the parameters available to `WP_Query` so the transition is completely transparent. Right now, our `WP_Query` integration supports *many* of the relevant `WP_Query` parameters. It also adds a couple special ones.
 
 ### Supported `WP_Query` Parameters
 
-* ```s``` (*string*)
+* `s` (*string*)
 
-    Search keyword. By default used to search against ```post_title```, ```post_content```, and ```post_excerpt```.
+    Search keyword. By default used to search against `post_title`, `post_content`, and `post_excerpt`.
 
-* ```posts_per_page``` (*int*)
+* `posts_per_page` (*int*)
 
-    Number of posts to show per page. Use -1 to show all posts (the ```offset``` parameter is ignored with a -1 value). Set the ```paged``` parameter to paginate based on ```posts_per_page```.
+    Number of posts to show per page. Use -1 to show all posts (the `offset` parameter is ignored with a -1 value). Set the `paged` parameter to paginate based on `posts_per_page`.
 
-* ```tax_query``` (*array*)
+* `tax_query` (*array*)
 
     Filter posts by terms in taxonomies. Takes an array of form:
 
@@ -101,9 +98,9 @@ After running an index, WP Engine Search integrates with `WP_Query` if and only 
     ) );
     ```
 
-    ```tax_query``` accepts an array of arrays where each inner array *only* supports ```taxonomy``` (string) and ```terms``` (string|array) parameters. ```terms``` is a slug, either in string or array form.
+    `tax_query` accepts an array of arrays where each inner array *only* supports `taxonomy` (string) and `terms` (string|array) parameters. `terms` is a slug, either in string or array form.
 
-* ```meta_query``` (*array*)
+* `meta_query` (*array*)
 
     Filter posts by post meta conditions. Takes an array of form:
 
@@ -120,14 +117,14 @@ After running an index, WP Engine Search integrates with `WP_Query` if and only 
     ) );
     ```
 
-    ```meta_query``` accepts an array of arrays where each inner array *only* supports ```key``` (string), ```value``` (string|array|int), and ```compare``` (string) parameters. ```compare``` supports the following:
+    `meta_query` accepts an array of arrays where each inner array *only* supports `key` (string), `value` (string|array|int), and `compare` (string) parameters. `compare` supports the following:
 
-      * ```=``` - Posts will be returned that have a post meta key corresponding to ```key``` and a value that equals the value passed to ```value```.
-      * ```!=``` - Posts will be returned that have a post meta key corresponding to ```key``` and a value that does NOT equal the value passed to ```value```.
-      * ```EXISTS``` - Posts will be returned that have a post meta key corresponding to ```key```.
-      * ```NOT EXISTS``` - Posts will be returned that do not have a post meta key corresponding to ```key```.
+      * `=` - Posts will be returned that have a post meta key corresponding to `key` and a value that equals the value passed to `value`.
+      * `!=` - Posts will be returned that have a post meta key corresponding to `key` and a value that does NOT equal the value passed to `value`.
+      * `EXISTS` - Posts will be returned that have a post meta key corresponding to `key`.
+      * `NOT EXISTS` - Posts will be returned that do not have a post meta key corresponding to `key`.
 
-    The outer array also supports a ```relation``` (string) parameter. By default ```relation``` is set to ```AND```:
+    The outer array also supports a `relation` (string) parameter. By default `relation` is set to `AND`:
     ```php
     new WP_Query( array(
         's'          => 'search phrase',
@@ -147,57 +144,57 @@ After running an index, WP Engine Search integrates with `WP_Query` if and only 
     ) );
     ```
 
-    Possible values for ```relation``` are ```OR``` and ```AND```. If ```relation``` is set to ```AND```, all inner queries must be true for a post to be returned. If ```relation``` is set to ```OR```, only one of the inner meta queries must be true for the post to be returned.
+    Possible values for `relation` are `OR` and `AND`. If `relation` is set to `AND`, all inner queries must be true for a post to be returned. If `relation` is set to `OR`, only one of the inner meta queries must be true for the post to be returned.
 
-* ```post_type``` (*string*/*array*)
+* `post_type` (*string*/*array*)
 
-    Filter posts by post type. ```any``` wil search all public post types. `WP_Query` defaults to either `post` or `any` if no `post_type` is provided depending on the context of the query. This is confusing. WP Engine Search will ALWAYS default to `any` if no `post_type` is provided. If you want to search for `post` posts, you MUST specify `post` as the `post_type`.
+    Filter posts by post type. `any` wil search all public post types. `WP_Query` defaults to either `post` or `any` if no `post_type` is provided depending on the context of the query. This is confusing. WP Engine Search will ALWAYS default to `any` if no `post_type` is provided. If you want to search for `post` posts, you MUST specify `post` as the `post_type`.
 
-* ```offset``` (*int*)
+* `offset` (*int*)
 
     Number of posts to skip in ascending order.
 
-* ```paged``` (*int*)
+* `paged` (*int*)
 
-    Page number of posts to be used with ```posts_per_page```.
+    Page number of posts to be used with `posts_per_page`.
 
-* ```author``` (*int*)
+* `author` (*int*)
 
     Show posts associated with certain author ID.
     
-* ```author_name``` (*string*)
+* `author_name` (*string*)
 
-    Show posts associated with certain author. Use ```user_nicename``` (NOT name).
+    Show posts associated with certain author. Use `user_nicename` (NOT name).
     
-* ```orderby``` (*string*)
+* `orderby` (*string*)
 
-    Order results by field name instead of relevance. Currently only supports: ```title```, ```name```, ```date```, and ```relevance``` (default).
+    Order results by field name instead of relevance. Currently only supports: `title`, `name`, `date`, and `relevance` (default).
 
-* ```order``` (*string*)
+* `order` (*string*)
 
-    Which direction to order results in. Accepts ```ASC``` and ```DESC```. Default is ```DESC```.
+    Which direction to order results in. Accepts `ASC` and `DESC`. Default is `DESC`.
 
 The following are special parameters that are only supported by WP Engine Search.
 
-* ```search_fields``` (*array*)
+* `search_fields` (*array*)
 
-    If not specified, defaults to ```array( 'post_title', 'post_excerpt', 'post_content' )```.
+    If not specified, defaults to `array( 'post_title', 'post_excerpt', 'post_content' )`.
 
-    * ```post_title``` (*string*)
+    * `post_title` (*string*)
 
         Applies current search to post titles.
 
-    * ```post_content``` (*string*)
+    * `post_content` (*string*)
 
         Applies current search to post content.
 
-    * ```post_excerpt``` (*string*)
+    * `post_excerpt` (*string*)
 
         Applies current search to post excerpts.
 
-    * ```taxonomies``` (*string* => *array*/*string*)
+    * `taxonomies` (*string* => *array*/*string*)
 
-        Applies the current search to terms within a taxonomy or taxonomies. The following will fuzzy search across ```post_title```, ```post_excerpt```, ```post_content```, and terms within taxonomies ```category``` and ```post_tag```:
+        Applies the current search to terms within a taxonomy or taxonomies. The following will fuzzy search across `post_title`, `post_excerpt`, `post_content`, and terms within taxonomies `category` and `post_tag`:
 
         ```php
         new WP_Query( array(
@@ -211,9 +208,9 @@ The following are special parameters that are only supported by WP Engine Search
         ) );
         ```
 
-    * ```meta``` (*string* => *array*/*string*)
+    * `meta` (*string* => *array*/*string*)
 
-        Applies the current search to post meta. The following will fuzzy search across ```post_title```, ```post_excerpt```, ```post_content```, and post meta keys ```meta_key_1``` and ```meta_key_2```:
+        Applies the current search to post meta. The following will fuzzy search across `post_title`, `post_excerpt`, `post_content`, and post meta keys `meta_key_1` and `meta_key_2`:
 
         ```php
         new WP_Query( array(
@@ -227,9 +224,9 @@ The following are special parameters that are only supported by WP Engine Search
         ) );
         ```
 
-    * ```author_name``` (*string*)
+    * `author_name` (*string*)
 
-        Applies the current search to author login names. The following will fuzzy search across ```post_title```, ```post_excerpt```, ```post_content``` and author ```user_login```:
+        Applies the current search to author login names. The following will fuzzy search across `post_title`, `post_excerpt`, `post_content` and author `user_login`:
 
         ```php
         new WP_Query( array(
@@ -243,7 +240,7 @@ The following are special parameters that are only supported by WP Engine Search
         ) );
         ```
 
-* ```aggs``` (*array*)
+* `aggs` (*array*)
 
     Add aggregation results to your search result. For example:
     
@@ -263,11 +260,11 @@ The following are special parameters that are only supported by WP Engine Search
     ) );
     ```
 
-* ```sites``` (*int*/*string*/*array*)
+* `sites` (*int*/*string*/*array*)
 
     This parameter only applies in a multi-site environment. It lets you search for posts on specific sites or across the network.
 
-    By default, ```sites``` defaults to ```current``` which searches the current site on the network:
+    By default, `sites` defaults to `current` which searches the current site on the network:
 
     ```php
     new WP_Query( array(
@@ -302,9 +299,9 @@ The following are special parameters that are only supported by WP Engine Search
     ) );
     ```
 
-    _Note:_ Nesting cross-site `WP_Query` loops can result in unexpected behavior.
+    *Note:* Nesting cross-site `WP_Query` loops can result in unexpected behavior.
 
-* ```ep_integrate``` (*bool*)
+* `ep_integrate` (*bool*)
 
     Allows you to perform queries without passing a search parameter. This is pretty powerful as you can leverage Elasticsearch to retrieve queries that are too complex for MySQL (such as a 5-dimensional taxonomy query). For example:
     
@@ -391,8 +388,12 @@ Follow the configuration instructions above to setup the plugin.
 
 ### Testing
 
-Within the terminal change directories to the plugin folder. Initialize your testing environment by running the
-following command:
+Within the terminal, change directories to the plugin folder. Initialize your testing environment by running the following command:
+
+For HGV users:
+```
+bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
+```
 
 For VVV users:
 ```
@@ -406,11 +407,11 @@ bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
 
 where:
 
-* ```wordpress_test``` is the name of the test database (all data will be deleted!)
-* ```root``` is the MySQL user name
-* ```root``` is the MySQL user password (if you're running VVV). Blank if you're running VIP Quickstart.
-* ```localhost``` is the MySQL server host
-* ```latest``` is the WordPress version; could also be 3.7, 3.6.2 etc.
+* `wordpress_test` is the name of the test database (all data will be deleted!)
+* `root` is the MySQL user name
+* `root` is the MySQL user password (if you're running VVV). Blank if you're running VIP Quickstart.
+* `localhost` is the MySQL server host
+* `latest` is the WordPress version; could also be 3.7, 3.6.2 etc.
 
 
 Our test suite depends on a running Elasticsearch server. You can supply a host to PHPUnit as an environmental variable like so:
@@ -421,7 +422,7 @@ EP_HOST="http://192.168.50.4:9200" phpunit
 
 #### Dockunit
 
-WP Engine Searchcontains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). It assumes the address of your Elasticsearch server is `http://192.168.50.4:9200`. You can use Dockunit by running:
+WP Engine Search contains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). It assumes the address of your Elasticsearch server is `http://192.168.50.4:9200`. You can use Dockunit by running:
 
 ```bash
 dockunit
@@ -429,7 +430,7 @@ dockunit
 
 ### Issues
 
-If you identify any errors or have an idea for improving the plugin, please [open an issue](https://github.com/10up/ElasticPress/issues?state=open). We're excited to see what the community thinks of this project, and we would love your input!
+If you identify any errors or have an idea for improving the plugin, please [open an issue](https://github.com/wpengine/ElasticPress-WPE/issues). We're excited to see what the community thinks of this project, and we would love your input!
 
 
 ## License
