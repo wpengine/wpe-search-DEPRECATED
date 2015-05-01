@@ -6,6 +6,7 @@
  * Version:     1.2.1
  * Author:      Christopher Goldman, DHAP Digital, Inc.
  * Author URI:  http://dhapdigital.com
+ * Text Domain: wpengine-search
  * License:     MIT
  *
  * It is a fork of https://github.com/10up/ElasticPress
