@@ -21,7 +21,7 @@ function _manually_load_plugin() {
 
 	define( 'EP_HOST', $host );
 
-	require( dirname( __FILE__ ) . '/../elasticpress.php' );
+	require( dirname( __FILE__ ) . '/../wpe-search.php' );
 
 	add_filter( 'ep_default_index_number_of_shards', 'ep_test_shard_number' );
 

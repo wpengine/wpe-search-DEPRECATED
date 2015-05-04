@@ -5,7 +5,7 @@ Plugin URI: https://github.com/wpengine/wpe-search/
 Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search, wpengine
 Requires at least: 3.7.1
 Tested up to: 4.2.1
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
