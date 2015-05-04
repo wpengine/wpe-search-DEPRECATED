@@ -4,7 +4,7 @@
  * Plugin Name: WP Engine Search
  * Plugin URI: https://github.com/wpengine/wpe-search
  * Description: Makes WordPress search (and related posts) more... elastic!
- * Version:     1.5.0
+ * Version:     1.6.0
  * Author:      Aaron Holbrook, Taylor Lovett, Matt Gross, 10up, Christopher Goldman, DHAP Digital, Inc.
  * Author URI:  http://wpengine.com/
  * Text Domain: wpengine-search
