@@ -28,7 +28,7 @@ There are other Elasticsearch integration plugins available for WordPress. WP En
 
 ## Installation
 
-1. Download the [current development release](https://github.com/wpengine/ElasticPress-WPE/archive/master.zip) and install it using the WordPress plugin uploader GUI.
+1. Download the [current development release](https://github.com/wpengine/wpe-search/archive/master.zip) and install it using the WordPress plugin uploader GUI.
 
 ## Configuration
 
@@ -37,7 +37,7 @@ There are other Elasticsearch integration plugins available for WordPress. WP En
 1. Activate the plugin with `wp-cli`. Remember to use the `--network` flag for Multisite installs!
 
 ```
-wp plugin activate WPE-Search [--network]
+wp plugin activate wpe-search [--network]
 ```
 
 2. Using `wp-cli`, configure the host of your Elasticsearch server.
@@ -430,7 +430,7 @@ dockunit
 
 ### Issues
 
-If you identify any errors or have an idea for improving the plugin, please [open an issue](https://github.com/wpengine/ElasticPress-WPE/issues). We're excited to see what the community thinks of this project, and we would love your input!
+If you identify any errors or have an idea for improving the plugin, please [open an issue](https://github.com/wpengine/wpe-search/issues). We're excited to see what the community thinks of this project, and we would love your input!
 
 
 ## License

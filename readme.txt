@@ -1,7 +1,7 @@
 === WP Engine Search ===
 Contributors: cgoldman@dhapdigital.com, WPEngine
 Author URI: http://dhapdigital.com
-Plugin URI: https://github.com/wpengine/ElasticPress-WPE/
+Plugin URI: https://github.com/wpengine/wpe-search/
 Tags: search, elasticsearch, fuzzy, facet, searching, autosuggest, suggest, elastic, advanced search, wpengine
 Requires at least: 3.7.1
 Tested up to: 4.2.1
@@ -32,17 +32,17 @@ Coupling WordPress with Elasticsearch allows us to do amazing things with search
 
 _Note:_ Requires [WP-CLI](http://wp-cli.org/) and [Elasticsearch](http://www.elasticsearch.org/).
 
-Please refer to [GitHub](https://github.com/wpengine/ElasticPress-WPE/) for detailed usage instructions and documentation.
+Please refer to [GitHub](https://github.com/wpengine/wpe-search/) for detailed usage instructions and documentation.
 
 == Installation ==
-1. Download the [current development release](https://github.com/wpengine/ElasticPress-WPE/archive/master.zip) and install it using the WordPress plugin uploader GUI.
+1. Download the [current development release](https://github.com/wpengine/wpe-search/archive/master.zip) and install it using the WordPress plugin uploader GUI.
 2. Activate the plugin.
 
 = Configuration =
 
 _Important!_ Members of the WP Engine Search alpha *do not* need to follow these steps! The plugin will be configured for you by our Labs team. However, if you have an Elasticsearch instance you would like to use, feel free to follow the steps below.
 
-1. Activate the plugin with `wp-cli`. Remember to use the `--network` flag for Multisite installs: `wp plugin activate WPE-Search [--network]`
+1. Activate the plugin with `wp-cli`. Remember to use the `--network` flag for Multisite installs: `wp plugin activate wpe-search [--network]`
 
 2. Using `wp-cli`, configure the host of your Elasticsearch server: `wp ep4wpe set-host 192.168.50.4`
 
