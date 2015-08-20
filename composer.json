@@ -1,5 +1,5 @@
 {
-  "name": "10up/ElasticPress",
+  "name": "wpengine/wpe-search",
   "description": "Integrate Elasticsearch with WordPress.",
   "type": "wordpress-plugin",
   "keywords": ["wordpress", "plugin", "elasticsearch", "elasticpress", "search"],
